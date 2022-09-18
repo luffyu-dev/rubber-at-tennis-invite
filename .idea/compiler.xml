@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="rubber-at-tennis-invite-manager" />
+        <module name="rubber-at-tennis-invite-api" />
+        <module name="rubber-at-tennis-invite-service" />
+        <module name="rubber-at-tennis-invite-dao" />
+        <module name="rubber-at-tennis-invite-web" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="rubber-at-tennis-invite-api" options="-parameters" />
+      <module name="rubber-at-tennis-invite-dao" options="-parameters" />
+      <module name="rubber-at-tennis-invite-manager" options="-parameters" />
+      <module name="rubber-at-tennis-invite-service" options="-parameters" />
+      <module name="rubber-at-tennis-invite-web" options="-parameters" />
+    </option>
+  </component>
+</project>

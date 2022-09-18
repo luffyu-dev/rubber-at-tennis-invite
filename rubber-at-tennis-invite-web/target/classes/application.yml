@@ -1,0 +1,11 @@
+server:
+  port: 38010
+  servlet:
+    context-path: /at-api
+
+spring:
+  application:
+    name: rubber-server-archetype
+  profiles:
+    active: dev
+
