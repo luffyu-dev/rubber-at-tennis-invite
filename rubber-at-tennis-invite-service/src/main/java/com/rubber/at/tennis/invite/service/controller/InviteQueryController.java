@@ -29,7 +29,6 @@ public class InviteQueryController {
      * @param req 当前的请求入参
      * @return
      */
-    @NeedLogin
     @PostMapping("/info")
     public ResultMsg getInviteInfo(@RequestBody InviteInfoCodeReq req){
         InviteInfoResponse inviteInfo = inviteInfoQueryApi.getInviteInfo(req);
