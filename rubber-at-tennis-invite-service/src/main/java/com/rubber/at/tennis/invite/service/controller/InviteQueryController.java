@@ -37,9 +37,9 @@ public class InviteQueryController {
 
 
     /**
-     * 获取用户的登录详情
-     * @param req
-     * @return
+     * 获取当前用户的邀请详情
+     * @param req 当前的邀请参数
+     * @return 返回是否支持邀请
      */
     @NeedLogin
     @PostMapping("/user-list")

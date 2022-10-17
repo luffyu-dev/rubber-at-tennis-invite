@@ -48,13 +48,14 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
      */
     @Override
     public InviteInfoResponse getInviteInfo(InviteInfoCodeReq req) {
+        // 查询邀请的基本信息
         InviteInfoEntity entity = inviteQueryComponent.getAndCheck(req.getInviteCode());
         InviteInfoResponse response = new InviteInfoResponse();
         BeanUtils.copyProperties(convertToDto(entity),response);
-        List<InviteUserEntity> inviteUserEntities = this.queryByList(req.getInviteCode());
-        if (CollUtil.isNotEmpty(inviteUserEntities)){
-            response.setUserList(inviteUserEntities.stream().map(this::convertUserToDto).collect(Collectors.toList()));
-        }
+        // 填充发起人信息
+        response.setSponsorInfo(inviteQueryComponent.getSponsorInfo(entity));
+        // 填充用户信息
+        response.setJoinUserList(inviteQueryComponent.queryByJoinUser(entity));
         return response;
     }
 
@@ -77,26 +78,6 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
         return convertDto(page);
     }
 
-
-    /**
-     * 查询一个邀请的相关邀请信息
-     * @param code
-     * @return
-     */
-    public List<InviteUserEntity> queryByList(String code){
-        LambdaQueryWrapper<InviteUserEntity> lqw = new LambdaQueryWrapper<>();
-        lqw.eq(InviteUserEntity::getInviteCode,code);
-        return iInviteUserDal.list(lqw);
-    }
-
-    /**
-     * 对象转换
-     */
-    private InviteUserDto convertUserToDto(InviteUserEntity entity){
-        InviteUserDto dto = new InviteUserDto();
-        BeanUtils.copyProperties(entity,dto);
-        return dto;
-    }
 
 
 

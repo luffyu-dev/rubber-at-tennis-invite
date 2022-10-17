@@ -18,4 +18,11 @@ public interface InviteInfoJoinApi {
     InviteCodeResponse join(InviteInfoCodeReq req);
 
 
+    /**
+     * 取消邀请
+     * @param dto
+     * @return
+     */
+    InviteCodeResponse cancelJoin(InviteInfoCodeReq dto);
+
 }

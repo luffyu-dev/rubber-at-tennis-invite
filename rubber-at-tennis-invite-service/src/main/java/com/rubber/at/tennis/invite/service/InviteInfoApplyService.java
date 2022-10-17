@@ -6,7 +6,11 @@ import com.rubber.at.tennis.invite.api.dto.InviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
 import com.rubber.at.tennis.invite.api.enums.InviteInfoStateEnums;
+import com.rubber.at.tennis.invite.dao.dal.IInviteInfoDal;
+import com.rubber.at.tennis.invite.dao.dal.IInviteUserDal;
 import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
+import com.rubber.at.tennis.invite.dao.entity.InviteUserEntity;
+import com.rubber.at.tennis.invite.service.common.exception.ErrorCodeEnums;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
 import com.rubber.at.tennis.invite.service.component.InviteApplyComponent;
 import com.rubber.at.tennis.invite.service.component.InviteQueryComponent;
@@ -16,6 +20,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 
 
 /**
@@ -32,6 +38,10 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
 
     @Autowired
     private InviteApplyComponent inviteApplyComponent;
+
+    @Autowired
+    private IInviteInfoDal iInviteInfoDal;
+
 
 
     private static final String PREFIX = "IC";
@@ -72,7 +82,7 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
             rollbackFor = Exception.class
     )
     public InviteCodeResponse editInviteInfo(InviteInfoDto dto) {
-        InviteInfoEntity infoEntity = inviteQueryComponent.getAndCheck(dto.getInviteCode(), dto.getUid());
+        InviteInfoEntity infoEntity = inviteQueryComponent.getBySponsor(dto.getInviteCode(), dto.getUid());
 
         if (!InviteInfoStateEnums.isForUpdate(infoEntity.getStatus())){
             throw new RubberServiceException(SysCode.PARAM_ERROR);
@@ -93,12 +103,28 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
      */
     @Override
     public InviteCodeResponse published(InviteInfoCodeReq dto) {
-        InviteInfoEntity infoEntity = inviteQueryComponent.getAndCheck(dto.getInviteCode(), dto.getUid());
+        InviteInfoEntity infoEntity = inviteQueryComponent.getBySponsor(dto.getInviteCode(), dto.getUid());
         // 数据转换
         if (!InviteInfoStateEnums.isForPublish(infoEntity.getStatus())){
             throw new RubberServiceException(SysCode.PARAM_ERROR);
         }
         return new InviteCodeResponse(infoEntity.getInviteCode());
+    }
+
+    /**
+     * 关闭邀请
+     *
+     * @param dto
+     */
+    @Override
+    public InviteCodeResponse closeInvite(InviteInfoCodeReq dto) {
+        InviteInfoEntity infoEntity = inviteQueryComponent.getBySponsor(dto.getInviteCode(), dto.getUid());
+        infoEntity.setStatus(InviteInfoStateEnums.CLOSE.getState());
+        infoEntity.setUpdateTime(new Date());
+        if(!iInviteInfoDal.updateById(infoEntity)){
+            throw new RubberServiceException(SysCode.SYSTEM_BUS);
+        }
+        return new InviteCodeResponse(dto.getInviteCode());
     }
 
 

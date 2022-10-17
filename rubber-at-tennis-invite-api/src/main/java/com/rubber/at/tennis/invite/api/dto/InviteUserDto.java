@@ -14,20 +14,30 @@ import java.util.Date;
  * @author rockyu
  * @since 2022-08-29
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class InviteUserDto extends BaseUserSession {
+public class InviteUserDto  {
 
 
     /**
-     * 邀请code
+     * 外表关联的uid
      */
-    private String inviteCode;
+    private Integer uid;
 
     /**
-     * 参与人id
+     * 用户昵称
      */
-    private Integer joinUid;
+    private String userNick;
+
+    /**
+     * 用户简介
+     */
+    private String userMotto;
+
+    /**
+     * 用户头像地址
+     */
+    private String userAvatar;
+
 
     /**
      * 关联的数据版本
@@ -48,9 +58,6 @@ public class InviteUserDto extends BaseUserSession {
      * 状态 10表示报名成功 20表示退出
      */
     private Integer status;
-
-
-
 
 
 }

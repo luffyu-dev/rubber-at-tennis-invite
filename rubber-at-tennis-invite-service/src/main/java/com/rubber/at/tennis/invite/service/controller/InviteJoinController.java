@@ -22,10 +22,23 @@ public class InviteJoinController {
     @Resource
     private InviteInfoJoinApi inviteInfoJoinApi;
 
+    /**
+     * 报名参与
+     */
     @NeedLogin
     @PostMapping("/submit")
     public ResultMsg joinInvite(@RequestBody InviteInfoCodeReq dto){
         inviteInfoJoinApi.join(dto);
+        return ResultMsg.success();
+    }
+
+    /**
+     * 取消报名
+     */
+    @NeedLogin
+    @PostMapping("/cancel")
+    public ResultMsg cancelJoin(@RequestBody InviteInfoCodeReq dto){
+        inviteInfoJoinApi.cancelJoin(dto);
         return ResultMsg.success();
     }
 

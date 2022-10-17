@@ -33,7 +33,11 @@ public enum  ErrorCodeEnums implements ICodeHandle {
      */
     INVITE_FINISHED("33001","报名已结束"),
     INVITE_TIME_JOIN_DEADLINE("33002","报名时间已截止"),
-    USER_IS_JOINED("33004","您已报名成功")
+    USER_IS_FULL("33001","报名人员已满"),
+    USER_IS_JOINED("33004","您已报名成功"),
+    USER_NOT_JOINED("33005","您还未报名"),
+    INVITE_CLOSE("33006","活动已取消"),
+
 
 
     ;

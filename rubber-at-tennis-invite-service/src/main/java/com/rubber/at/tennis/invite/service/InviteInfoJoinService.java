@@ -4,6 +4,7 @@ import com.rubber.at.tennis.invite.api.InviteInfoJoinApi;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
 import com.rubber.at.tennis.invite.api.enums.InviteInfoStateEnums;
+import com.rubber.at.tennis.invite.dao.dal.IInviteUserDal;
 import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.InviteUserEntity;
 import com.rubber.at.tennis.invite.service.common.exception.ErrorCodeEnums;
@@ -12,6 +13,7 @@ import com.rubber.at.tennis.invite.service.component.InviteApplyComponent;
 import com.rubber.at.tennis.invite.service.component.InviteJoinComponent;
 import com.rubber.at.tennis.invite.service.component.InviteQueryComponent;
 import com.rubber.at.tennis.invite.service.model.InviteJoinModel;
+import com.rubber.base.components.util.result.code.SysCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,8 +50,7 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
         InviteInfoEntity infoEntity = inviteQueryComponent.getAndCheck(req.getInviteCode());
         // 校验是否已经完成
         this.doCheckInviteInfo(infoEntity);
-        // 资格校验
-        this.doCheckUserQualifications(req);
+
         // 数据邀请对象
         InviteJoinModel joinModel = new InviteJoinModel(req,infoEntity);
         inviteJoinComponent.joinInvite(joinModel);
@@ -57,7 +58,23 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
         return new InviteCodeResponse(req.getInviteCode());
     }
 
-
+    /**
+     * 参与人取消报名
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public InviteCodeResponse cancelJoin(InviteInfoCodeReq req) {
+        // 校验活动是否存在
+        InviteInfoEntity inviteInfoEntity = inviteQueryComponent.getAndCheck(req.getInviteCode());
+        // 校验是否可以编辑
+        if (InviteInfoStateEnums.CLOSE.getState().equals(inviteInfoEntity.getStatus())){
+            throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
+        }
+        inviteJoinComponent.cancelJoinInvite(req,inviteInfoEntity);
+        return new InviteCodeResponse(req.getInviteCode());
+    }
 
 
     /**
@@ -66,15 +83,16 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
      */
     private void doCheckInviteInfo(InviteInfoEntity infoEntity){
         // 校验是否已经完成
+        if (InviteInfoStateEnums.CLOSE.getState().equals(infoEntity.getStatus())){
+            throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
+        }
+        // 校验是否已经完成
         if (InviteInfoStateEnums.FINISHED.getState().equals(infoEntity.getStatus())){
             throw new RubberServiceException(ErrorCodeEnums.INVITE_FINISHED);
         }
         if (infoEntity.getJoinNumber() >= infoEntity.getInviteNumber()){
-            // 触发事件更新
-            infoEntity.setStatus(InviteInfoStateEnums.FINISHED.getState());
-            inviteApplyComponent.updateInvite(infoEntity);
             // 邀请人员已完成
-            throw new RubberServiceException(ErrorCodeEnums.INVITE_FINISHED);
+            throw new RubberServiceException(ErrorCodeEnums.USER_IS_FULL);
         }
         Date now = new Date();
         if (now.getTime() > infoEntity.getJoinDeadline().getTime()){
@@ -83,16 +101,6 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
 
     }
 
-    /**
-     * 校验用户的参与价格
-     * @param req
-     */
-    private void doCheckUserQualifications(InviteInfoCodeReq req){
-        InviteUserEntity joinUser = inviteQueryComponent.getInviteJoinUser(req.getInviteCode(), req.getUid());
-        if (joinUser != null){
-            throw new RubberServiceException(ErrorCodeEnums.USER_IS_JOINED);
-        }
-    }
 
 
 

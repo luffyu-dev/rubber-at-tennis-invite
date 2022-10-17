@@ -15,11 +15,15 @@ import java.util.List;
 @Data
 public class InviteInfoResponse extends InviteInfoDto {
 
+    /**
+     * 发起人的用户信息
+     */
+    private InviteUserDto sponsorInfo;
 
     /**
      * 关联的用户信息
      */
-    private List<InviteUserDto>  userList;
+    private List<InviteUserDto>  joinUserList;
 
 
 }

@@ -28,11 +28,16 @@ public interface InviteInfoApplyApi {
     InviteCodeResponse editInviteInfo(InviteInfoDto dto);
 
 
-
-
     /**
      * 发布邀请
      */
     InviteCodeResponse published(InviteInfoCodeReq dto);
+
+
+    /**
+     * 关闭邀请
+     */
+    InviteCodeResponse closeInvite(InviteInfoCodeReq dto);
+
 
 }

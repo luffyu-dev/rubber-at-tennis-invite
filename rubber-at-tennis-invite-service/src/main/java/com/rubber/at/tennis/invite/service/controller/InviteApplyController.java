@@ -22,6 +22,9 @@ public class InviteApplyController {
     @Resource
     private InviteInfoApplyApi inviteInfoApplyApi;
 
+    /**
+     * 新增或者编辑一个邀请
+     */
     @NeedLogin
     @PostMapping("/edit")
     public ResultMsg editInvite(@RequestBody InviteInfoDto dto){
@@ -35,10 +38,24 @@ public class InviteApplyController {
     }
 
 
+    /**
+     * 发布邀请
+     */
     @NeedLogin
     @PostMapping("/published")
     public ResultMsg published(@RequestBody InviteInfoCodeReq dto){
         InviteCodeResponse response = inviteInfoApplyApi.published(dto);
+        return ResultMsg.success(response);
+    }
+
+
+    /**
+     * 取消邀请
+     */
+    @NeedLogin
+    @PostMapping("/close")
+    public ResultMsg close(@RequestBody InviteInfoCodeReq dto){
+        InviteCodeResponse response = inviteInfoApplyApi.closeInvite(dto);
         return ResultMsg.success(response);
     }
 }

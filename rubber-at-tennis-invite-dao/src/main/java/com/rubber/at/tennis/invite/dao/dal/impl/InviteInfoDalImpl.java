@@ -1,5 +1,6 @@
 package com.rubber.at.tennis.invite.dao.dal.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
 import com.rubber.at.tennis.invite.dao.mapper.InviteInfoMapper;
 import com.rubber.at.tennis.invite.dao.dal.IInviteInfoDal;
@@ -17,4 +18,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class InviteInfoDalImpl extends BaseAdminService<InviteInfoMapper, InviteInfoEntity> implements IInviteInfoDal {
 
+    /**
+     * 通过code查询邀请的信息
+     *
+     * @param code 当前的code
+     * @return 返回邀请的信息
+     */
+    @Override
+    public InviteInfoEntity getByCode(String code) {
+        LambdaQueryWrapper<InviteInfoEntity> lqw = new LambdaQueryWrapper<>();
+        lqw.eq(InviteInfoEntity::getInviteCode,code);
+        return getOne(lqw);
+    }
 }

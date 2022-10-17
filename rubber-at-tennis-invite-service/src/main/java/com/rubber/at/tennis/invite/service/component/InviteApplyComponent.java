@@ -55,7 +55,8 @@ public class InviteApplyComponent {
         inviteInfoEntity.setJoinNumber(newJoinIndex);
         LambdaQueryWrapper<InviteInfoEntity> lqw = new LambdaQueryWrapper<>();
         lqw.eq(InviteInfoEntity::getId,inviteInfoEntity.getId())
-                .eq(InviteInfoEntity::getJoinNumber,oldJoinIndex);
+                .eq(InviteInfoEntity::getJoinNumber,oldJoinIndex)
+                .ge(InviteInfoEntity::getInviteNumber,newJoinIndex);
         return iInviteInfoDal.update(inviteInfoEntity,lqw);
     }
 

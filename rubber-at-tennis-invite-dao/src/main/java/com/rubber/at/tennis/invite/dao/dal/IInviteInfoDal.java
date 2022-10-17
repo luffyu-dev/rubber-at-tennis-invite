@@ -13,4 +13,13 @@ import com.rubber.base.components.mysql.plugins.admin.IBaseAdminService;
  */
 public interface IInviteInfoDal extends IBaseAdminService<InviteInfoEntity> {
 
+
+    /**
+     * 通过code查询邀请的信息
+     * @param code 当前的code
+     * @return 返回邀请的信息
+     */
+    InviteInfoEntity getByCode(String code);
+
+
 }

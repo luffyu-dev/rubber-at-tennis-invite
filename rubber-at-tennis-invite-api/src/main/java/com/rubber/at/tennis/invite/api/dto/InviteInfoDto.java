@@ -44,6 +44,11 @@ public class InviteInfoDto extends BaseUserSession {
      */
     private Integer inviteNumber;
 
+    /**
+     * 已报名人数
+     */
+    private Integer joinNumber;
+
 
     /**
      * 开始时间
