@@ -1,8 +1,10 @@
 package com.rubber.at.tennis.invite.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
@@ -59,6 +61,12 @@ public class InviteInfoDto extends BaseUserSession {
      * 结束时间
      */
     private Date endTime;
+
+    /**
+     * 报名截止日期
+     */
+    private Date joinDeadline;
+
 
     /**
      * 关联的球场code
