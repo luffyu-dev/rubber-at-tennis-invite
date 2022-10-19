@@ -31,8 +31,6 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
     @Autowired
     private InviteQueryComponent inviteQueryComponent;
 
-    @Autowired
-    private InviteApplyComponent inviteApplyComponent;
 
     @Autowired
     private InviteJoinComponent inviteJoinComponent;
@@ -95,7 +93,7 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
             throw new RubberServiceException(ErrorCodeEnums.USER_IS_FULL);
         }
         Date now = new Date();
-        if (now.getTime() > infoEntity.getJoinDeadline().getTime()){
+        if (infoEntity.getJoinDeadline() != null && now.getTime() > infoEntity.getJoinDeadline().getTime()){
             throw new RubberServiceException(ErrorCodeEnums.INVITE_TIME_JOIN_DEADLINE);
         }
 

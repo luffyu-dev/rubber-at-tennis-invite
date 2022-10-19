@@ -1,10 +1,8 @@
 package com.rubber.at.tennis.invite.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
@@ -63,8 +61,14 @@ public class InviteInfoDto extends BaseUserSession {
     private Date endTime;
 
     /**
+     * 开启结束时间描述
+     */
+    private String startEndTimeDesc;
+
+    /**
      * 报名截止日期
      */
+    private Integer joinDeadlineType;
     private Date joinDeadline;
 
 
@@ -114,6 +118,55 @@ public class InviteInfoDto extends BaseUserSession {
      */
     private Integer status;
     private String statusDesc;
+
+
+    /**
+     * 高级设置
+     * 1表示设置 0表示没有
+     */
+    private Integer majorSettings = 0;
+
+
+    /**
+     * 单打 / 双打
+     */
+    private String playType;
+
+
+    /**
+     * 球员水平要求
+     */
+    private String playerLevel;
+
+
+    /**
+     * 免责声明
+     * 1表示开启 0表示没有
+     */
+    private Integer disclaimerFlag = 0;
+    private String disclaimerAdditional;
+
+
+    /**
+     * 人均费用
+     * 费用类型 和 人均费用
+     */
+    private Integer costType;
+    private double peopleCost;
+
+
+    /**
+     * 消息通知开关
+     * 0表示没有，1表示打开
+     */
+    private Integer notifyFlag = 0;
+
+
+    /**
+     * 是否允许取消
+     * 0表示没有，1表示打开
+     */
+    private Integer allowCancel = 1;
 
 
 

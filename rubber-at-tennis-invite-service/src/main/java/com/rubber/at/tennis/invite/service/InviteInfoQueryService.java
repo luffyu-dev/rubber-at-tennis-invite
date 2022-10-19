@@ -1,6 +1,7 @@
 package com.rubber.at.tennis.invite.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rubber.at.tennis.invite.api.InviteInfoQueryApi;
@@ -90,6 +91,11 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
         InviteInfoStateEnums stateEnums = InviteInfoStateEnums.getState(entity.getStatus());
         if (stateEnums != null){
             dto.setStatusDesc(stateEnums.getDesc());
+        }
+        if (dto.getStartTime() != null && dto.getEndTime() != null){
+            String starStr = DateUtil.format(dto.getStartTime(),"yyyy/MM/dd HH:mm");
+            String endStr = DateUtil.format(dto.getEndTime(),"HH:mm");
+            dto.setStartEndTimeDesc(starStr + "-" + endStr);
         }
         return dto;
     }

@@ -64,6 +64,7 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
         BeanUtils.copyProperties(dto,infoEntity);
         infoEntity.setInviteCode(creatInviteId());
         infoEntity.setStatus(InviteInfoStateEnums.INIT.getState());
+        infoEntity.setJoinNumber(0);
         // 保存数据
         if(!inviteApplyComponent.saveInvite(infoEntity)){
             throw new RubberServiceException(SysCode.SYSTEM_BUS);
