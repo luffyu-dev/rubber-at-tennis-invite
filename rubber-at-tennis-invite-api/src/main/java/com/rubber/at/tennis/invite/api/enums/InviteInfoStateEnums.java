@@ -14,13 +14,13 @@ public enum  InviteInfoStateEnums {
      */
     CLOSE(10,"已取消"),
 
-    EXPIRED(11,"已过期"),
+    EXPIRED(11,"已结束"),
 
-    INIT(20,"编辑中"),
+    INIT(20,"待发布"),
 
-    INVITING(50,"邀请中"),
+    INVITING(50,"进行中"),
 
-    FINISHED(70,"邀请满额"),
+    FINISHED(70,"已满额"),
 
     ;
 

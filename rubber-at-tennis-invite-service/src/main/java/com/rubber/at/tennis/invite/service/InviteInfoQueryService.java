@@ -21,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -88,14 +89,21 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
     private InviteInfoDto convertToDto(InviteInfoEntity entity){
         InviteInfoDto dto = new InviteInfoDto();
         BeanUtils.copyProperties(entity,dto);
-        InviteInfoStateEnums stateEnums = InviteInfoStateEnums.getState(entity.getStatus());
-        if (stateEnums != null){
-            dto.setStatusDesc(stateEnums.getDesc());
-        }
         if (dto.getStartTime() != null && dto.getEndTime() != null){
             String starStr = DateUtil.format(dto.getStartTime(),"yyyy/MM/dd HH:mm");
             String endStr = DateUtil.format(dto.getEndTime(),"HH:mm");
             dto.setStartEndTimeDesc(starStr + "-" + endStr);
+        }
+
+        InviteInfoStateEnums stateEnums = InviteInfoStateEnums.getState(entity.getStatus());
+        if (entity.getJoinNumber() >= entity.getInviteNumber()){
+            stateEnums = InviteInfoStateEnums.FINISHED;
+        }else if (entity.getJoinDeadline() != null && entity.getJoinDeadline().getTime() <= (new Date()).getTime()){
+            stateEnums = InviteInfoStateEnums.EXPIRED;
+        }
+        if (stateEnums != null){
+            dto.setStatus(stateEnums.getState());
+            dto.setStatusDesc(stateEnums.getDesc());
         }
         return dto;
     }
