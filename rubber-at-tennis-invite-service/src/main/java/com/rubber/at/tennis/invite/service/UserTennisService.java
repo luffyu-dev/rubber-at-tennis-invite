@@ -140,6 +140,9 @@ public class UserTennisService implements UserTennisApi {
         entity.setLevelMatrix(JSON.toJSONString(new LevelMatrixDto()));
         entity.setCreateTime(new Date());
         entity.setUpdateTime(new Date());
+        entity.setWeekTrainHours(0);
+        entity.setAllTrainHours(0);
+        entity.setNtrp("2.5");
         return entity;
     }
 
