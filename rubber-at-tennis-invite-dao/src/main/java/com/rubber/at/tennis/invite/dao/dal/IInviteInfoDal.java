@@ -1,7 +1,10 @@
 package com.rubber.at.tennis.invite.dao.dal;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rubber.at.tennis.invite.dao.condition.InviteInfoCondition;
 import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
 import com.rubber.base.components.mysql.plugins.admin.IBaseAdminService;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -22,4 +25,11 @@ public interface IInviteInfoDal extends IBaseAdminService<InviteInfoEntity> {
     InviteInfoEntity getByCode(String code);
 
 
+    /**
+     *
+     * @param page
+     * @param condition
+     * @return
+     */
+    Page<InviteInfoEntity> queryPageByJoin(Page<InviteInfoEntity> page, InviteInfoCondition condition);
 }

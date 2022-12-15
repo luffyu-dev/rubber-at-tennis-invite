@@ -2,6 +2,7 @@ package com.rubber.at.tennis.invite.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rubber.at.tennis.invite.api.InviteInfoQueryApi;
@@ -11,11 +12,13 @@ import com.rubber.at.tennis.invite.api.dto.InviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.req.InvitePageReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteInfoResponse;
 import com.rubber.at.tennis.invite.api.enums.InviteInfoStateEnums;
+import com.rubber.at.tennis.invite.dao.condition.InviteInfoCondition;
 import com.rubber.at.tennis.invite.dao.dal.IInviteInfoDal;
 import com.rubber.at.tennis.invite.dao.dal.IInviteUserDal;
 import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.InviteUserEntity;
 import com.rubber.at.tennis.invite.service.component.InviteQueryComponent;
+import com.rubber.base.components.mysql.utils.ReflectionUtils;
 import com.rubber.base.components.util.result.page.ResultPage;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +38,6 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
     @Autowired
     private InviteQueryComponent inviteQueryComponent;
 
-    @Autowired
-    private IInviteUserDal iInviteUserDal;
 
     @Autowired
     private IInviteInfoDal iInviteInfoDal;
@@ -69,18 +70,73 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
      */
     @Override
     public ResultPage<InviteInfoDto> listPage(InvitePageReq req) {
+        if (req.getQueryUid() == null){
+            req.setQueryUid(req.getUid());
+        }
+        Page<InviteInfoEntity> page;
+        if (Integer.valueOf(1).equals(req.getSearchType())){
+            page = queryUserJoin(req);
+        }else {
+            page = queryUserCreateInvite(req);
+        }
+        return convertPageDto(page);
+    }
+
+
+    /**
+     * 查询自己创建的邀约活动
+     * @param req 当前请求
+     * @return 返回也没信息
+     */
+    private Page<InviteInfoEntity> queryUserCreateInvite(InvitePageReq req){
+        Page<InviteInfoEntity> page = new Page<>();
+        page.setSize(req.getSize());
+        page.setCurrent(req.getPage());
+        LambdaQueryWrapper<InviteInfoEntity> lqw = new LambdaQueryWrapper<>();
+        lqw.eq(InviteInfoEntity::getUid,req.getQueryUid());
+        if (StrUtil.isNotEmpty(req.getSearchValue())){
+            lqw.like(InviteInfoEntity::getInviteTitle,req.getSearchValue());
+        }
+        lqw.orderByDesc(InviteInfoEntity::getCreateTime);
+        iInviteInfoDal.page(page,lqw);
+        return page;
+    }
+
+    /**
+     * 查询自己参与的
+     * @param req
+     * @return
+     */
+    private Page<InviteInfoEntity> queryUserJoin(InvitePageReq req){
         Page<InviteInfoEntity> page = new Page<>();
         page.setSize(req.getSize());
         page.setCurrent(req.getPage());
 
-        LambdaQueryWrapper<InviteInfoEntity> lqw = new LambdaQueryWrapper<>();
-        lqw.eq(InviteInfoEntity::getUid,req.getUid());
-        iInviteInfoDal.page(page,lqw);
-
-        return convertDto(page);
+        InviteInfoCondition condition = new InviteInfoCondition();
+        condition.setJoinUid(req.getUid());
+        condition.setSearchValue(req.getSearchValue());
+        iInviteInfoDal.queryPageByJoin(page,condition);
+        return page;
     }
 
-
+    /**
+     * 对象分页转换
+     * @param page
+     * @return
+     */
+    private ResultPage<InviteInfoDto> convertPageDto(Page<InviteInfoEntity> page){
+        ResultPage<InviteInfoDto> dtoResultPage = new ResultPage<>();
+        dtoResultPage.setCurrent(page.getCurrent());
+        dtoResultPage.setPages(page.getPages());
+        dtoResultPage.setSize(page.getSize());
+        dtoResultPage.setTotal(page.getTotal());
+        if (CollUtil.isNotEmpty(page.getRecords())){
+            dtoResultPage.setRecords(
+                    page.getRecords().stream().map(this::convertToDto).collect(Collectors.toList())
+            );
+        }
+        return dtoResultPage;
+    }
 
 
     /**
@@ -89,16 +145,19 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
     private InviteInfoDto convertToDto(InviteInfoEntity entity){
         InviteInfoDto dto = new InviteInfoDto();
         BeanUtils.copyProperties(entity,dto);
+        if (dto.getJoinNumber() == null){
+            dto.setJoinNumber(0);
+        }
         if (dto.getStartTime() != null && dto.getEndTime() != null){
             String starStr = DateUtil.format(dto.getStartTime(),"yyyy/MM/dd HH:mm");
             String endStr = DateUtil.format(dto.getEndTime(),"HH:mm");
             dto.setStartEndTimeDesc(starStr + "-" + endStr);
         }
-
         InviteInfoStateEnums stateEnums = InviteInfoStateEnums.getState(entity.getStatus());
-        if (entity.getJoinNumber() >= entity.getInviteNumber()){
+        if (dto.getJoinNumber() >= dto.getInviteNumber()){
             stateEnums = InviteInfoStateEnums.FINISHED;
-        }else if (entity.getJoinDeadline() != null && entity.getJoinDeadline().getTime() <= (new Date()).getTime()){
+        }
+        if (entity.getJoinDeadline() != null && entity.getJoinDeadline().getTime() <= (new Date()).getTime()){
             stateEnums = InviteInfoStateEnums.EXPIRED;
         }
         if (stateEnums != null){
@@ -109,21 +168,5 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
     }
 
 
-    private ResultPage<InviteInfoDto> convertDto(Page<InviteInfoEntity> page){
-        ResultPage<InviteInfoDto> dtoResultPage = new ResultPage<>();
-        dtoResultPage.setCurrent(page.getCurrent());
-        dtoResultPage.setPages(page.getPages());
-        dtoResultPage.setSize(page.getSize());
-        dtoResultPage.setTotal(page.getTotal());
-        if (CollUtil.isNotEmpty(page.getRecords())){
-            dtoResultPage.setRecords(
-                    page.getRecords().stream().map(i->{
-                        InviteInfoDto dto = new InviteInfoDto();
-                        BeanUtils.copyProperties(i,dto);
-                        return dto;
-                    }).collect(Collectors.toList())
-            );
-        }
-        return dtoResultPage;
-    }
+
 }
