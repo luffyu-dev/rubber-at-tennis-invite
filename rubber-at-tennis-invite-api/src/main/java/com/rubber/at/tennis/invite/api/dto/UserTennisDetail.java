@@ -54,7 +54,7 @@ public class UserTennisDetail {
 
 
     /**
-     * 有网球的日期
+     * 练习网球的日期
      */
     private List<String> tennisDate =  new ArrayList<>();
 

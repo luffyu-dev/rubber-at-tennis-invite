@@ -1,16 +1,21 @@
 package com.rubber.at.tennis.invite.service;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rubber.at.tennis.invite.api.UserTennisApi;
 import com.rubber.at.tennis.invite.api.dto.LevelMatrixDto;
+import com.rubber.at.tennis.invite.api.dto.UserModifyTennisDto;
 import com.rubber.at.tennis.invite.api.dto.UserTennisDetail;
 import com.rubber.at.tennis.invite.api.dto.UserTrainInfo;
 import com.rubber.at.tennis.invite.api.dto.req.UserTennisDateReq;
+import com.rubber.at.tennis.invite.api.enums.NtrpEnums;
 import com.rubber.at.tennis.invite.dao.dal.IUserTennisInfoDal;
 import com.rubber.at.tennis.invite.dao.entity.UserTennisInfoEntity;
+import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
 import com.rubber.at.tennis.invite.service.model.RecordTennisModel;
+import com.rubber.base.components.util.result.code.SysCode;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +55,30 @@ public class UserTennisService implements UserTennisApi {
         // 查询网球日记
         userTennis.setTennisDate(userTennisRecordService.queryRecordDate(userSession,null));
         return userTennis;
+    }
+
+    /**
+     * 修改用户的基本信息
+     *
+     * @param dto@return 返回用户是否成功
+     */
+    @Override
+    public void updateUserTennis(UserModifyTennisDto dto) {
+        UserTennisInfoEntity entity = getAndInit(dto);
+        if (dto.getLevelMatrix() != null){
+            entity.setLevelMatrix(JSON.toJSONString(dto.getLevelMatrix()));
+        }
+        if (dto.getStartPlayDate() != null){
+            entity.setStartPlayDate(dto.getStartPlayDate());
+        }
+        if (StrUtil.isNotEmpty(dto.getNtrp())){
+            NtrpEnums ntrpEnums= NtrpEnums.getByLevel(dto.getNtrp());
+            if (ntrpEnums == null){
+                throw new RubberServiceException(SysCode.PARAM_ERROR);
+            }
+            entity.setNtrp(ntrpEnums.getNtrp());
+        }
+        iUserTennisInfoDal.updateById(entity);
     }
 
     /**
@@ -142,7 +171,7 @@ public class UserTennisService implements UserTennisApi {
         entity.setUpdateTime(new Date());
         entity.setWeekTrainHours(0);
         entity.setAllTrainHours(0);
-        entity.setNtrp("2.5");
+        entity.setNtrp(NtrpEnums.LEVEL_2_5.getNtrp());
         return entity;
     }
 

@@ -1,6 +1,7 @@
 package com.rubber.at.tennis.invite.service.controller;
 
 import com.rubber.at.tennis.invite.api.UserTennisApi;
+import com.rubber.at.tennis.invite.api.dto.UserModifyTennisDto;
 import com.rubber.at.tennis.invite.api.dto.req.UserTennisDateReq;
 import com.rubber.base.components.util.annotation.NeedLogin;
 import com.rubber.base.components.util.result.ResultMsg;
@@ -32,6 +33,18 @@ public class UserTennisController {
     @PostMapping("/info")
     public ResultMsg getUserTennisInfo(@RequestBody  BaseUserSession baseUserSession){
         return ResultMsg.success(userTennisApi.getUserTennisInfo(baseUserSession));
+    }
+
+
+    /**
+     * 更新用户的基本信息
+     * @param dto  用户信息
+     */
+    @NeedLogin
+    @PostMapping("/up")
+    public ResultMsg getUserTennisInfo(@RequestBody UserModifyTennisDto dto){
+        userTennisApi.updateUserTennis(dto);
+        return ResultMsg.success();
     }
 
 

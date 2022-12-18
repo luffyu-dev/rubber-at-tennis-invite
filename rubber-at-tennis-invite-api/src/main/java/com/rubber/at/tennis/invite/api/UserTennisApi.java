@@ -1,5 +1,6 @@
 package com.rubber.at.tennis.invite.api;
 
+import com.rubber.at.tennis.invite.api.dto.UserModifyTennisDto;
 import com.rubber.at.tennis.invite.api.dto.UserTennisDetail;
 import com.rubber.at.tennis.invite.api.dto.req.UserTennisDateReq;
 import com.rubber.base.components.util.session.BaseUserSession;
@@ -21,6 +22,12 @@ public interface UserTennisApi {
     UserTennisDetail getUserTennisInfo(BaseUserSession userSession);
 
 
+    /**
+     * 修改用户的基本信息
+     * @param dto 当前的用户session
+     * @return 返回用户是否成功
+     */
+    void updateUserTennis(UserModifyTennisDto dto);
 
 
     /**
