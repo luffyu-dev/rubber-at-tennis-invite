@@ -1,6 +1,7 @@
 package com.rubber.at.tennis.invite.api.dto;
 
 
+import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class UserTennisDetail {
     /**
      * 开始打球的时间
      */
+    @JSONField(format = "yyyy-MM-dd")
     private Date startPlayDate;
 
     /**

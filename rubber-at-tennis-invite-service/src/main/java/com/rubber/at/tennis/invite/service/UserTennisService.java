@@ -145,9 +145,10 @@ public class UserTennisService implements UserTennisApi {
         userTennis.setLevelMatrix(levelMatrixDto);
         Date startPlayDate = tennisInfo.getStartPlayDate();
         if (startPlayDate != null){
-           long betweenMonth = DateUtil.betweenMonth(startPlayDate,new Date(),false);
-           userTennis.setYearDate((int)betweenMonth / 12);
-           userTennis.setMonthDate((int)betweenMonth % 12);
+            userTennis.setStartPlayDate(startPlayDate);
+            long betweenMonth = DateUtil.betweenMonth(startPlayDate,new Date(),false);
+            userTennis.setYearDate((int)betweenMonth / 12);
+            userTennis.setMonthDate((int)betweenMonth % 12);
         }
 
         // 网球训练的信息
