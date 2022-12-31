@@ -136,7 +136,7 @@ public class InviteInfoDto extends BaseUserSession {
     /**
      * 球员水平要求
      */
-    private String playerLevel;
+    private String playerNtrp;
 
 
     /**
@@ -152,7 +152,7 @@ public class InviteInfoDto extends BaseUserSession {
      * 费用类型 和 人均费用
      */
     private Integer costType;
-    private double peopleCost;
+    private Double peopleCost;
 
 
     /**

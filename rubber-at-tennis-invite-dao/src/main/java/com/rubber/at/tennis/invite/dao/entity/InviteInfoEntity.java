@@ -169,4 +169,58 @@ public class InviteInfoEntity extends BaseEntity {
     private Date updateTime;
 
 
+    /**
+     * 高级设置
+     * 1表示设置 0表示没有
+     */
+    @TableField("Fmajor_settings")
+    private Integer majorSettings ;
+
+
+    /**
+     * 单打 / 双打
+     */
+    @TableField("Fplay_type")
+    private String playType;
+
+
+    /**
+     * 球员水平要求
+     */
+    @TableField("Fplay_ntrp")
+    private String playerNtrp;
+
+
+    /**
+     * 免责声明
+     * 1表示开启 0表示没有
+     */
+    @TableField("Fdisclaimer_flag")
+    private Integer disclaimerFlag;
+
+
+    /**
+     * 人均费用
+     * 费用类型 和 人均费用
+     */
+    @TableField("Fcost_info")
+    private String costInfo;
+
+
+    /**
+     * 消息通知开关
+     * 0表示没有，1表示打开
+     */
+    @TableField("Fnotify_flag")
+    private Integer notifyFlag;
+
+
+    /**
+     * 是否允许取消
+     * 0表示没有，1表示打开
+     */
+    @TableField("Fallow_cancel")
+    private Integer allowCancel ;
+
+
 }

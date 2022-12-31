@@ -1,6 +1,7 @@
 package com.rubber.at.tennis.invite.service;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSON;
 import com.rubber.at.tennis.invite.api.InviteInfoApplyApi;
 import com.rubber.at.tennis.invite.api.dto.InviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
@@ -14,6 +15,7 @@ import com.rubber.at.tennis.invite.service.common.exception.ErrorCodeEnums;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
 import com.rubber.at.tennis.invite.service.component.InviteApplyComponent;
 import com.rubber.at.tennis.invite.service.component.InviteQueryComponent;
+import com.rubber.at.tennis.invite.service.model.InviteCostInfo;
 import com.rubber.base.components.util.result.code.SysCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -61,7 +63,7 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
         doCheckDto(dto);
         // 数据初始化
         InviteInfoEntity infoEntity = new InviteInfoEntity();
-        BeanUtils.copyProperties(dto,infoEntity);
+        initConvert(infoEntity,dto);
         infoEntity.setInviteCode(creatInviteId());
         infoEntity.setStatus(InviteInfoStateEnums.INIT.getState());
         infoEntity.setJoinNumber(0);
@@ -83,18 +85,17 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
             rollbackFor = Exception.class
     )
     public InviteCodeResponse editInviteInfo(InviteInfoDto dto) {
-        InviteInfoEntity infoEntity = inviteQueryComponent.getBySponsor(dto.getInviteCode(), dto.getUid());
-
-        if (!InviteInfoStateEnums.isForUpdate(infoEntity.getStatus())){
-            throw new RubberServiceException(SysCode.PARAM_ERROR);
+        InviteInfoEntity infoDB = inviteQueryComponent.getBySponsor(dto.getInviteCode(), dto.getUid());
+        if (dto.getInviteNumber() < infoDB.getJoinNumber()){
+            throw new RubberServiceException(ErrorCodeEnums.INVITE_NUMBER_CHANGE_ERROR);
         }
         // 数据转换
-        initConvertForUpdate(infoEntity,dto);
+        initConvert(infoDB,dto);
         // 保存数据
-        if(!inviteApplyComponent.updateInvite(infoEntity)){
+        if(!inviteApplyComponent.updateInvite(infoDB)){
             throw new RubberServiceException(SysCode.SYSTEM_BUS);
         }
-        return new InviteCodeResponse(infoEntity.getInviteCode());
+        return new InviteCodeResponse(infoDB.getInviteCode());
     }
 
     /**
@@ -143,12 +144,13 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
     /**
      * 编辑时候的 初始化并转换
      */
-    private void initConvertForUpdate(InviteInfoEntity oldDbEntity,InviteInfoDto dto){
+    private void initConvert(InviteInfoEntity oldDbEntity,InviteInfoDto dto){
         BeanUtils.copyProperties(dto,oldDbEntity,"status");
+        InviteCostInfo costInfo = new InviteCostInfo();
+        costInfo.setCostType(dto.getCostType());
+        costInfo.setPeopleCost(dto.getPeopleCost());
+        oldDbEntity.setCostInfo(JSON.toJSONString(costInfo));
     }
-
-
-
 
 
 

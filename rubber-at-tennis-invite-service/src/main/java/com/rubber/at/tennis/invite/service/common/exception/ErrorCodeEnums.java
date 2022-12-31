@@ -37,6 +37,7 @@ public enum  ErrorCodeEnums implements ICodeHandle {
     USER_IS_JOINED("33004","您已报名成功"),
     USER_NOT_JOINED("33005","您还未报名"),
     INVITE_CLOSE("33006","活动已取消"),
+    INVITE_NUMBER_CHANGE_ERROR("33007","邀请人数不能小于已报名人数"),
 
 
 
