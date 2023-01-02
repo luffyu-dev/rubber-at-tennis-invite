@@ -154,9 +154,6 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
         costInfo.setCostType(dto.getCostType());
         costInfo.setPeopleCost(dto.getPeopleCost());
         oldDbEntity.setCostInfo(JSON.toJSONString(costInfo));
-        if (dto.getPlayType() != null){
-            oldDbEntity.setPlayType(dto.getPlayType().toJSONString());
-        }
     }
 
 

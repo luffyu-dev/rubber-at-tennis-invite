@@ -131,7 +131,7 @@ public class InviteInfoDto extends BaseUserSession {
     /**
      * 单打 / 双打
      */
-    private JSONObject playType;
+    private String playType;
 
 
     /**
@@ -174,8 +174,12 @@ public class InviteInfoDto extends BaseUserSession {
      * 是否允许取消
      * 0表示没有，1表示打开
      */
-    private Integer allowCancel = 1;
+    private Integer allowCancel = 0;
 
-
+    /**
+     * 是否自动参加
+     * 0表示不自动参加 1表示自动参加
+     */
+    private Integer autoJoin ;
 
 }

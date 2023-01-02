@@ -223,4 +223,13 @@ public class InviteInfoEntity extends BaseEntity {
     private Integer allowCancel ;
 
 
+
+    /**
+     * 是否自动参加
+     * 0表示不自动参加 1表示自动参加
+     */
+    @TableField("Fauto_join")
+    private Integer autoJoin ;
+
+
 }

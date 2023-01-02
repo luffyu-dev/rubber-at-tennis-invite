@@ -19,6 +19,7 @@ import com.rubber.at.tennis.invite.dao.dal.IInviteUserDal;
 import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.InviteUserEntity;
 import com.rubber.at.tennis.invite.service.component.InviteQueryComponent;
+import com.rubber.at.tennis.invite.service.model.InviteCostInfo;
 import com.rubber.base.components.mysql.utils.ReflectionUtils;
 import com.rubber.base.components.util.LbsUtils;
 import com.rubber.base.components.util.result.page.ResultPage;
@@ -169,8 +170,11 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
             dto.setStatus(stateEnums.getState());
             dto.setStatusDesc(stateEnums.getDesc());
         }
-        if (StrUtil.isNotEmpty(entity.getPlayType())){
-            dto.setPlayType(JSON.parseObject(entity.getPlayType()));
+
+        if (StrUtil.isNotEmpty(entity.getCostInfo())){
+            InviteCostInfo  costInfo = JSON.parseObject(entity.getCostInfo(),InviteCostInfo.class);
+            dto.setCostType(costInfo.getCostType());
+            dto.setPeopleCost(costInfo.getPeopleCost());
         }
         return dto;
     }
