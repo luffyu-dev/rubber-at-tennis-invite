@@ -3,6 +3,7 @@ package com.rubber.at.tennis.invite.service;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rubber.at.tennis.invite.api.InviteInfoQueryApi;
@@ -19,7 +20,9 @@ import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.InviteUserEntity;
 import com.rubber.at.tennis.invite.service.component.InviteQueryComponent;
 import com.rubber.base.components.mysql.utils.ReflectionUtils;
+import com.rubber.base.components.util.LbsUtils;
 import com.rubber.base.components.util.result.page.ResultPage;
+import com.rubber.base.components.util.session.BaseLbsUserSession;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,6 +62,8 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
         response.setSponsorInfo(inviteQueryComponent.getSponsorInfo(entity));
         // 填充用户信息
         response.setJoinUserList(inviteQueryComponent.queryByJoinUser(entity));
+        // 填充距离
+        response.setLbsDistance(handlerSetLbs(req,entity));
         return response;
     }
 
@@ -164,7 +169,28 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
             dto.setStatus(stateEnums.getState());
             dto.setStatusDesc(stateEnums.getDesc());
         }
+        if (StrUtil.isNotEmpty(entity.getPlayType())){
+            dto.setPlayType(JSON.parseObject(entity.getPlayType()));
+        }
         return dto;
+    }
+
+
+    /**
+     * 距离lbs的距离
+     * @param lbsUserSession
+     * @param entity
+     * @return
+     */
+    private int handlerSetLbs(BaseLbsUserSession lbsUserSession,InviteInfoEntity entity){
+        if (StrUtil.isNotEmpty(lbsUserSession.getLongitude())
+                && StrUtil.isNotEmpty(lbsUserSession.getLatitude())
+                && StrUtil.isNotEmpty(entity.getCourtLongitude())
+                && StrUtil.isNotEmpty(entity.getCourtLatitude())) {
+            return (int)LbsUtils.getDistance(lbsUserSession.getLatitude(),lbsUserSession.getLongitude(),
+                    entity.getCourtLatitude(),entity.getCourtLongitude());
+        }
+        return 0;
     }
 
 

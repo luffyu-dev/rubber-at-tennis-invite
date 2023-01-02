@@ -65,7 +65,11 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
         InviteInfoEntity infoEntity = new InviteInfoEntity();
         initConvert(infoEntity,dto);
         infoEntity.setInviteCode(creatInviteId());
-        infoEntity.setStatus(InviteInfoStateEnums.INIT.getState());
+        if (Integer.valueOf(1).equals(dto.getAutoPublished())){
+            infoEntity.setStatus(InviteInfoStateEnums.INVITING.getState());
+        }else {
+            infoEntity.setStatus(InviteInfoStateEnums.INIT.getState());
+        }
         infoEntity.setJoinNumber(0);
         // 保存数据
         if(!inviteApplyComponent.saveInvite(infoEntity)){
@@ -150,6 +154,9 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
         costInfo.setCostType(dto.getCostType());
         costInfo.setPeopleCost(dto.getPeopleCost());
         oldDbEntity.setCostInfo(JSON.toJSONString(costInfo));
+        if (dto.getPlayType() != null){
+            oldDbEntity.setPlayType(dto.getPlayType().toJSONString());
+        }
     }
 
 

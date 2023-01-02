@@ -1,5 +1,6 @@
 package com.rubber.at.tennis.invite.api.dto;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -130,13 +131,20 @@ public class InviteInfoDto extends BaseUserSession {
     /**
      * 单打 / 双打
      */
-    private String playType;
+    private JSONObject playType;
 
 
     /**
      * 球员水平要求
      */
     private String playerNtrp;
+
+
+    /**
+     * 是否自动发布
+     * 0表示否 1表示是
+     */
+    private Integer autoPublished;
 
 
     /**

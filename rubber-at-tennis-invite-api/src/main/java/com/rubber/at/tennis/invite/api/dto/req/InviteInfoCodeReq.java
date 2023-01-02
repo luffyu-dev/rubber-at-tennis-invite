@@ -1,5 +1,6 @@
 package com.rubber.at.tennis.invite.api.dto.req;
 
+import com.rubber.base.components.util.session.BaseLbsUserSession;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,7 +17,7 @@ import java.util.Date;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class InviteInfoCodeReq extends BaseUserSession {
+public class InviteInfoCodeReq extends BaseLbsUserSession {
 
 
     /**

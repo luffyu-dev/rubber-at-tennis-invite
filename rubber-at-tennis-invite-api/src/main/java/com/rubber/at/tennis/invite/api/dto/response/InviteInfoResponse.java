@@ -26,4 +26,10 @@ public class InviteInfoResponse extends InviteInfoDto {
     private List<InviteUserDto>  joinUserList;
 
 
+    /**
+     * lsb的距离
+     */
+    private Integer lbsDistance = 0;
+
+
 }
