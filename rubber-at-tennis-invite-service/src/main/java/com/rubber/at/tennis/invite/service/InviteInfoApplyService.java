@@ -95,6 +95,30 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
         }
         // 数据转换
         initConvert(infoDB,dto);
+
+        // 修改时候的状态控制
+        InviteInfoStateEnums nowState = InviteInfoStateEnums.getState(dto.getStatus());
+        if (nowState != null && !InviteInfoStateEnums.INVITING.equals(nowState)){
+            switch (nowState){
+                case FINISHED:
+                    if (dto.getInviteNumber() > infoDB.getJoinNumber()){
+                        dto.setStatus(InviteInfoStateEnums.INVITING.getState());
+                    }
+                    break;
+                case EXPIRED:
+                    if (dto.getEndTime() != null && dto.getEndTime().getTime() > System.currentTimeMillis()){
+                        dto.setStatus(InviteInfoStateEnums.INVITING.getState());
+                    }
+                    break;
+                case INIT:
+                case CLOSE:
+                default:
+                    if (Integer.valueOf(1).equals(dto.getAutoPublished())){
+                        dto.setStatus(InviteInfoStateEnums.INVITING.getState());
+                        break;
+                    }
+            }
+        }
         // 保存数据
         if(!inviteApplyComponent.updateInvite(infoDB)){
             throw new RubberServiceException(SysCode.SYSTEM_BUS);

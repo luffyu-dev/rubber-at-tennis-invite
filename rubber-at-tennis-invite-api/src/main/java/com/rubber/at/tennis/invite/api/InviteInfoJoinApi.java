@@ -1,6 +1,7 @@
 package com.rubber.at.tennis.invite.api;
 
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
+import com.rubber.at.tennis.invite.api.dto.req.InviteJoinReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
 
 /**
@@ -23,6 +24,6 @@ public interface InviteInfoJoinApi {
      * @param dto
      * @return
      */
-    InviteCodeResponse cancelJoin(InviteInfoCodeReq dto);
+    InviteCodeResponse cancelJoin(InviteJoinReq dto);
 
 }

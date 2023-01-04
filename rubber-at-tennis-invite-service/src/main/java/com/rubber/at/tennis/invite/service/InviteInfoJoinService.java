@@ -2,6 +2,7 @@ package com.rubber.at.tennis.invite.service;
 
 import com.rubber.at.tennis.invite.api.InviteInfoJoinApi;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
+import com.rubber.at.tennis.invite.api.dto.req.InviteJoinReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
 import com.rubber.at.tennis.invite.api.enums.InviteInfoStateEnums;
 import com.rubber.at.tennis.invite.dao.dal.IInviteUserDal;
@@ -63,15 +64,28 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
      * @return
      */
     @Override
-    public InviteCodeResponse cancelJoin(InviteInfoCodeReq req) {
-        // 校验活动是否存在
-        InviteInfoEntity inviteInfoEntity = inviteQueryComponent.getAndCheck(req.getInviteCode());
-        // 校验是否可以编辑
-        if (InviteInfoStateEnums.CLOSE.getState().equals(inviteInfoEntity.getStatus())){
-            throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
+    public InviteCodeResponse cancelJoin(InviteJoinReq req) {
+        if (Integer.valueOf(1).equals(req.getCancelType())){
+            InviteInfoEntity userInvite = inviteQueryComponent.getBySponsor(req.getInviteCode(),req.getUid());
+            // 校验是否可以编辑
+            if (InviteInfoStateEnums.CLOSE.getState().equals(userInvite.getStatus())
+                    || InviteInfoStateEnums.EXPIRED.getState().equals(userInvite.getStatus())){
+                throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
+            }
+            inviteJoinComponent.cancelJoinInvite(req.getJoinUid(),userInvite);
+            return new InviteCodeResponse(req.getInviteCode());
+        }else {
+            // 取消自己参与的活动
+            // 校验活动是否存在
+            InviteInfoEntity inviteInfoEntity = inviteQueryComponent.getAndCheck(req.getInviteCode());
+            // 校验是否可以编辑
+            if (InviteInfoStateEnums.CLOSE.getState().equals(inviteInfoEntity.getStatus())
+                    || InviteInfoStateEnums.EXPIRED.getState().equals(inviteInfoEntity.getStatus())){
+                throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
+            }
+            inviteJoinComponent.cancelJoinInvite(req.getUid(),inviteInfoEntity);
+            return new InviteCodeResponse(req.getInviteCode());
         }
-        inviteJoinComponent.cancelJoinInvite(req,inviteInfoEntity);
-        return new InviteCodeResponse(req.getInviteCode());
     }
 
 

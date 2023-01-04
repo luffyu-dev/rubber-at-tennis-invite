@@ -68,9 +68,9 @@ public class InviteJoinComponent {
     /**
      * 取消报名
      */
-    public void cancelJoinInvite(InviteInfoCodeReq req,InviteInfoEntity inviteInfoEntity){
+    public void cancelJoinInvite(Integer uid,InviteInfoEntity inviteInfoEntity){
         // 建议用户是否有参与
-        InviteUserEntity joinUser = iInviteUserDal.getInviteJoinUser(req.getInviteCode(), req.getUid());
+        InviteUserEntity joinUser = iInviteUserDal.getInviteJoinUser(inviteInfoEntity.getInviteCode(), uid);
         if (joinUser == null){
             throw new RubberServiceException(ErrorCodeEnums.USER_NOT_JOINED);
         }
