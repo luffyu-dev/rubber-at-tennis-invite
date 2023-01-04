@@ -113,6 +113,7 @@ public class InviteQueryComponent {
         }
         InviteUserDto dto = new InviteUserDto();
         BeanUtils.copyProperties(entity,dto);
+        dto.setJoinTime(entity.getModifyTime());
         return dto;
     }
 }

@@ -102,19 +102,19 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
             switch (nowState){
                 case FINISHED:
                     if (dto.getInviteNumber() > infoDB.getJoinNumber()){
-                        dto.setStatus(InviteInfoStateEnums.INVITING.getState());
+                        infoDB.setStatus(InviteInfoStateEnums.INVITING.getState());
                     }
                     break;
                 case EXPIRED:
-                    if (dto.getEndTime() != null && dto.getEndTime().getTime() > System.currentTimeMillis()){
-                        dto.setStatus(InviteInfoStateEnums.INVITING.getState());
+                    if (dto.getJoinDeadline() != null && dto.getJoinDeadline().getTime() > System.currentTimeMillis()){
+                        infoDB.setStatus(InviteInfoStateEnums.INVITING.getState());
                     }
                     break;
                 case INIT:
                 case CLOSE:
                 default:
                     if (Integer.valueOf(1).equals(dto.getAutoPublished())){
-                        dto.setStatus(InviteInfoStateEnums.INVITING.getState());
+                        infoDB.setStatus(InviteInfoStateEnums.INVITING.getState());
                         break;
                     }
             }

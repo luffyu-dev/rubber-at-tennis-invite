@@ -1,5 +1,6 @@
 package com.rubber.at.tennis.invite.api.dto;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -59,5 +60,10 @@ public class InviteUserDto  {
      */
     private Integer status;
 
+
+    /**
+     * 参与时间
+     */
+    private Date joinTime;
 
 }
