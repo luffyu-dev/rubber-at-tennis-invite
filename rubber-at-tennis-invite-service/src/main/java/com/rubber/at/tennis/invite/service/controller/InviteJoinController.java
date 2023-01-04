@@ -2,6 +2,7 @@ package com.rubber.at.tennis.invite.service.controller;
 
 import com.rubber.at.tennis.invite.api.InviteInfoJoinApi;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
+import com.rubber.at.tennis.invite.api.dto.req.InviteJoinReq;
 import com.rubber.base.components.util.annotation.NeedLogin;
 import com.rubber.base.components.util.result.ResultMsg;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +38,7 @@ public class InviteJoinController {
      */
     @NeedLogin
     @PostMapping("/cancel")
-    public ResultMsg cancelJoin(@RequestBody InviteInfoCodeReq dto){
+    public ResultMsg cancelJoin(@RequestBody InviteJoinReq dto){
         inviteInfoJoinApi.cancelJoin(dto);
         return ResultMsg.success();
     }
