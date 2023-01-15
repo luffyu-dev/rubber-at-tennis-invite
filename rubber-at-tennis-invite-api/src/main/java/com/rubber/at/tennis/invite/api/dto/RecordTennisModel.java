@@ -1,7 +1,6 @@
-package com.rubber.at.tennis.invite.service.model;
+package com.rubber.at.tennis.invite.api.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.rubber.at.tennis.invite.service.common.constant.RecordTypeEnums;
+import com.rubber.at.tennis.invite.api.enums.RecordTypeEnums;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.Data;
 
@@ -18,6 +17,11 @@ public class RecordTennisModel  {
      * 发起人id
      */
     private BaseUserSession userSession;
+
+    /**
+     * 业务id
+     */
+    private String bizId;
 
     /**
      * 记录名称

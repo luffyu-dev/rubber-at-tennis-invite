@@ -3,6 +3,7 @@ package com.rubber.at.tennis.invite.dao.dal;
 import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
 import com.rubber.base.components.mysql.plugins.admin.IBaseAdminService;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -27,6 +28,6 @@ public interface IUserBasicInfoDal extends IBaseAdminService<UserBasicInfoEntity
      * @param uids 当前的uid集合
      * @return 返回符合要求的用户信息
      */
-    List<UserBasicInfoEntity> queryByUid(List<Integer> uids);
+    List<UserBasicInfoEntity> queryByUid(Collection<Integer> uids);
 
 }

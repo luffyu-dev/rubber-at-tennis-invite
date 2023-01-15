@@ -14,7 +14,7 @@ import com.rubber.at.tennis.invite.api.enums.NtrpEnums;
 import com.rubber.at.tennis.invite.dao.dal.IUserTennisInfoDal;
 import com.rubber.at.tennis.invite.dao.entity.UserTennisInfoEntity;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
-import com.rubber.at.tennis.invite.service.model.RecordTennisModel;
+import com.rubber.at.tennis.invite.api.dto.RecordTennisModel;
 import com.rubber.base.components.util.result.code.SysCode;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.extern.slf4j.Slf4j;
@@ -97,17 +97,50 @@ public class UserTennisService implements UserTennisApi {
      * 记录网球的相关信息
      * @param model
      */
+    @Override
     public void recordTennis(RecordTennisModel model) {
+        // TODO: 2023/1/15 需要异步处理
         // 记录信息
+        log.info("开始写入网球记录信息 req={}",model);
         if(userTennisRecordService.recordTennis(model)){
             UserTennisInfoEntity  userTennisInfoEntity = getAndInit(model.getUserSession());
             Integer allTrainHours = userTennisInfoEntity.getAllTrainHours() + model.getRecordDuration();
             Integer weekTrainHours = userTennisInfoEntity.getWeekTrainHours() + model.getRecordDuration();
-            userTennisInfoEntity.setAllTrainHours(allTrainHours);
-            userTennisInfoEntity.setWeekTrainHours(weekTrainHours);
-            userTennisInfoEntity.setUpdateTime(new Date());
-            iUserTennisInfoDal.updateById(userTennisInfoEntity);
+
+            UserTennisInfoEntity upE = new UserTennisInfoEntity();
+            upE.setId(userTennisInfoEntity.getId());
+            upE.setAllTrainHours(allTrainHours);
+            upE.setWeekTrainHours(weekTrainHours);
+            upE.setUpdateTime(new Date());
+            iUserTennisInfoDal.updateById(upE);
         }
+    }
+
+    /**
+     * 取消活动信息
+     *
+     * @param userSession
+     * @param bizId
+     *
+     */
+    @Override
+    public void cancelTennisRecord(BaseUserSession userSession, String bizId) {
+        // TODO: 2023/1/15 需要异步处理
+        int hour = userTennisRecordService.cancelRecordTennis(bizId,userSession);
+        if (hour > 0){
+            UserTennisInfoEntity  userTennisInfoEntity = getAndInit(userSession);
+            int allTrainHours = userTennisInfoEntity.getAllTrainHours() + hour;
+            int weekTrainHours = userTennisInfoEntity.getWeekTrainHours() + hour;
+
+            UserTennisInfoEntity upE = new UserTennisInfoEntity();
+            upE.setId(userTennisInfoEntity.getId());
+            upE.setAllTrainHours(Math.max(allTrainHours, 0));
+            upE.setWeekTrainHours(Math.max(weekTrainHours, 0));
+            upE.setUpdateTime(new Date());
+            iUserTennisInfoDal.updateById(upE);
+        }
+
+
     }
 
 

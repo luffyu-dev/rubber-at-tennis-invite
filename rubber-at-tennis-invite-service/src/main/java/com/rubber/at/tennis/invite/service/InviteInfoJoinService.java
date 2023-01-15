@@ -1,20 +1,21 @@
 package com.rubber.at.tennis.invite.service;
 
+import cn.hutool.core.date.DateUtil;
 import com.rubber.at.tennis.invite.api.InviteInfoJoinApi;
+import com.rubber.at.tennis.invite.api.UserTennisApi;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteJoinReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
 import com.rubber.at.tennis.invite.api.enums.InviteInfoStateEnums;
-import com.rubber.at.tennis.invite.dao.dal.IInviteUserDal;
 import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
-import com.rubber.at.tennis.invite.dao.entity.InviteUserEntity;
+import com.rubber.at.tennis.invite.api.enums.RecordTypeEnums;
 import com.rubber.at.tennis.invite.service.common.exception.ErrorCodeEnums;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
-import com.rubber.at.tennis.invite.service.component.InviteApplyComponent;
 import com.rubber.at.tennis.invite.service.component.InviteJoinComponent;
 import com.rubber.at.tennis.invite.service.component.InviteQueryComponent;
 import com.rubber.at.tennis.invite.service.model.InviteJoinModel;
-import com.rubber.base.components.util.result.code.SysCode;
+import com.rubber.at.tennis.invite.api.dto.RecordTennisModel;
+import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,9 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
     @Autowired
     private InviteJoinComponent inviteJoinComponent;
 
+    @Autowired
+    private UserTennisApi userTennisApi;
+
 
     /**
      * 新增一个邀请
@@ -53,6 +57,10 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
         // 数据邀请对象
         InviteJoinModel joinModel = new InviteJoinModel(req,infoEntity);
         inviteJoinComponent.joinInvite(joinModel);
+
+        // 对接写入操作日期
+        doHandlerTennisRecord(req,infoEntity);
+
         // 返回
         return new InviteCodeResponse(req.getInviteCode());
     }
@@ -84,6 +92,9 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
                 throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
             }
             inviteJoinComponent.cancelJoinInvite(req.getUid(),inviteInfoEntity);
+
+            // 取消关联的网球记录信息
+            userTennisApi.cancelTennisRecord(req,inviteInfoEntity.getInviteCode());
             return new InviteCodeResponse(req.getInviteCode());
         }
     }
@@ -114,7 +125,27 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
     }
 
 
-
+    /**
+     * 写入tennis的记录
+     */
+    private void doHandlerTennisRecord(BaseUserSession userSession,InviteInfoEntity infoEntity){
+        RecordTennisModel recordTennisModel = new RecordTennisModel();
+        recordTennisModel.setRecordTitle(infoEntity.getInviteTitle());
+        recordTennisModel.setRecordType(RecordTypeEnums.INVITE);
+        recordTennisModel.setUserSession(userSession);
+        recordTennisModel.setBizId(infoEntity.getInviteCode());
+        if (infoEntity.getStartTime() != null && infoEntity.getEndTime() != null){
+            recordTennisModel.setRecordDate(DateUtil.format(infoEntity.getStartTime(),"yyyy-MM-dd"));
+            recordTennisModel.setRecordStart(infoEntity.getStartTime());
+            recordTennisModel.setRecordStart(infoEntity.getEndTime());
+            Long time  = (infoEntity.getEndTime().getTime() - infoEntity.getStartTime().getTime()) / 1000 / 60;
+            recordTennisModel.setRecordDuration(time < 0 ? 60 : time.intValue());
+        }else {
+            recordTennisModel.setRecordDate(DateUtil.format(infoEntity.getJoinDeadline(),"yyyy-MM-dd"));
+            recordTennisModel.setRecordDuration(60);
+        }
+        userTennisApi.recordTennis(recordTennisModel);
+    }
 
 }
 

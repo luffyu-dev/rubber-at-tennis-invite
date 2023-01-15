@@ -1,4 +1,4 @@
-package com.rubber.at.tennis.invite.service.common.constant;
+package com.rubber.at.tennis.invite.api.enums;
 
 /**
  * @author luffyu

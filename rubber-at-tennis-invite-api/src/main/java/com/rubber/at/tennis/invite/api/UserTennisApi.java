@@ -1,5 +1,6 @@
 package com.rubber.at.tennis.invite.api;
 
+import com.rubber.at.tennis.invite.api.dto.RecordTennisModel;
 import com.rubber.at.tennis.invite.api.dto.UserModifyTennisDto;
 import com.rubber.at.tennis.invite.api.dto.UserTennisDetail;
 import com.rubber.at.tennis.invite.api.dto.req.UserTennisDateReq;
@@ -38,4 +39,15 @@ public interface UserTennisApi {
     List<String> queryAtTennisDate(UserTennisDateReq req);
 
 
+    /**
+     * 记录网球记录信息
+     * @param model
+     */
+    void recordTennis(RecordTennisModel model);
+
+
+    /**
+     * 取消活动信息
+     */
+    void cancelTennisRecord(BaseUserSession userSession,String bizId);
 }

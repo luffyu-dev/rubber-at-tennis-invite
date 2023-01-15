@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -96,10 +97,19 @@ public class InviteQueryComponent {
         if (CollUtil.isEmpty(inviteUserEntities)){
             return new ArrayList<>();
         }
-        List<Integer> joinUserList = inviteUserEntities.stream().map(InviteUserEntity::getJoinUid).collect(Collectors.toList());
-        List<UserBasicInfoEntity> userBasicInfoList = iUserBasicInfoDal.queryByUid(joinUserList);
+        Map<Integer, InviteUserEntity> collect = inviteUserEntities.stream().collect(Collectors.toMap(InviteUserEntity::getJoinUid, o -> o, (o1, o2) -> o1));
+        List<UserBasicInfoEntity> userBasicInfoList = iUserBasicInfoDal.queryByUid(collect.keySet());
 
-        return userBasicInfoList.stream().map(this::convertUserToDto).collect(Collectors.toList());
+        List<InviteUserDto> resultList = new ArrayList<>();
+        for (UserBasicInfoEntity basicInfoEntity:userBasicInfoList){
+            InviteUserDto dto = this.convertUserToDto(basicInfoEntity);
+            InviteUserEntity userEntity = collect.get(basicInfoEntity.getUid());
+            if (userEntity != null){
+                dto.setJoinTime(userEntity.getUpdateTime());
+            }
+            resultList.add(dto);
+        }
+        return resultList;
     }
 
 
@@ -113,7 +123,6 @@ public class InviteQueryComponent {
         }
         InviteUserDto dto = new InviteUserDto();
         BeanUtils.copyProperties(entity,dto);
-        dto.setJoinTime(entity.getModifyTime());
         return dto;
     }
 }

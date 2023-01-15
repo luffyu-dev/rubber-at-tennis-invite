@@ -7,6 +7,7 @@ import com.rubber.at.tennis.invite.dao.dal.IUserBasicInfoDal;
 import com.rubber.base.components.mysql.plugins.admin.BaseAdminService;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -40,7 +41,7 @@ public class UserBasicInfoDalImpl extends BaseAdminService<UserBasicInfoMapper, 
      * @return 返回符合要求的用户信息
      */
     @Override
-    public List<UserBasicInfoEntity> queryByUid(List<Integer> uids) {
+    public List<UserBasicInfoEntity> queryByUid(Collection<Integer> uids) {
         LambdaQueryWrapper<UserBasicInfoEntity> lqw = new LambdaQueryWrapper<>();
         lqw.in(UserBasicInfoEntity::getUid,uids);
         return list(lqw);

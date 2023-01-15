@@ -103,5 +103,10 @@ public class UserTennisRecordEntity extends BaseEntity {
     @TableField("Fupdate_time")
     private Date updateTime;
 
+    /**
+     * 业务id
+     */
+    @TableField("Fbiz_id")
+    private String bizId;
 
 }
