@@ -137,7 +137,7 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
         if (infoEntity.getStartTime() != null && infoEntity.getEndTime() != null){
             recordTennisModel.setRecordDate(DateUtil.format(infoEntity.getStartTime(),"yyyy-MM-dd"));
             recordTennisModel.setRecordStart(infoEntity.getStartTime());
-            recordTennisModel.setRecordStart(infoEntity.getEndTime());
+            recordTennisModel.setRecordEnd(infoEntity.getEndTime());
             Long time  = (infoEntity.getEndTime().getTime() - infoEntity.getStartTime().getTime()) / 1000 / 60;
             recordTennisModel.setRecordDuration(time < 0 ? 60 : time.intValue());
         }else {

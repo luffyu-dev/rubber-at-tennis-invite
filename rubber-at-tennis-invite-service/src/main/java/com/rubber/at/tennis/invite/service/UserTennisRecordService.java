@@ -63,7 +63,9 @@ public class UserTennisRecordService {
         BeanUtils.copyProperties(model,recordEntity);
         recordEntity.setUid(model.getUserSession().getUid());
         recordEntity.setRecordTitle(model.getRecordType().toString());
-        recordEntity.setRecordDate(DateUtil.format(new Date(),"yyyy/MM/dd"));
+        if (recordEntity.getRecordDate() == null){
+            recordEntity.setRecordDate(DateUtil.format(new Date(),"yyyy/MM/dd"));
+        }
         return iUserTennisRecordDal.save(recordEntity);
     }
 
