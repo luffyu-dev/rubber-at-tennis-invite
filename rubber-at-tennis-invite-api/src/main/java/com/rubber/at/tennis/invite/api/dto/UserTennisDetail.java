@@ -60,4 +60,16 @@ public class UserTennisDetail {
      */
     private List<String> tennisDate =  new ArrayList<>();
 
+
+    /**
+     * 用户昵称
+     */
+    private String nickName;
+
+
+    /**
+     * 用户头像
+     */
+    private String avatarUrl;
+
 }

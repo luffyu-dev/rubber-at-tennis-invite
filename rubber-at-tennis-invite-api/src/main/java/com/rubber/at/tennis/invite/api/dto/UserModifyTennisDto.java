@@ -31,4 +31,16 @@ public class UserModifyTennisDto extends BaseUserSession {
     private LevelMatrixDto levelMatrix;
 
 
+    /**
+     * 用户昵称
+     */
+    private String nickName;
+
+
+    /**
+     * 用户头像
+     */
+    private String avatarUrl;
+
+
 }
