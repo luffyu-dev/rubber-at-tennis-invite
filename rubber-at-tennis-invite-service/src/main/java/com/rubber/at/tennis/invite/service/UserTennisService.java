@@ -228,7 +228,7 @@ public class UserTennisService implements UserTennisApi {
         UserBasicInfoEntity userBasicInfo = iUserBasicInfoDal.getByUid(dto.getUid());
         if (userBasicInfo == null){
             userBasicInfo = new UserBasicInfoEntity();
-            userBasicInfo.setUid(userBasicInfo.getId());
+            userBasicInfo.setUid(dto.getUid());
             userBasicInfo.setUserNick(dto.getNickName());
             userBasicInfo.setUserAvatar(dto.getAvatarUrl());
             userBasicInfo.setCreateTime(new Date());

@@ -18,9 +18,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -97,18 +95,26 @@ public class InviteQueryComponent {
         if (CollUtil.isEmpty(inviteUserEntities)){
             return new ArrayList<>();
         }
-        Map<Integer, InviteUserEntity> collect = inviteUserEntities.stream().collect(Collectors.toMap(InviteUserEntity::getJoinUid, o -> o, (o1, o2) -> o1));
-        List<UserBasicInfoEntity> userBasicInfoList = iUserBasicInfoDal.queryByUid(collect.keySet());
+        Set<Integer> ids = inviteUserEntities.stream().map(InviteUserEntity::getJoinUid).collect(Collectors.toSet());
+        List<UserBasicInfoEntity> userBasicInfoList = iUserBasicInfoDal.queryByUid(ids);
+        Map<Integer, UserBasicInfoEntity> collect = new HashMap<>();
+        if (CollUtil.isNotEmpty(userBasicInfoList)){
+            collect = userBasicInfoList.stream().collect(Collectors.toMap(UserBasicInfoEntity::getUid, o -> o, (o1, o2) -> o1));
+        }
 
         List<InviteUserDto> resultList = new ArrayList<>();
-        for (UserBasicInfoEntity basicInfoEntity:userBasicInfoList){
-            InviteUserDto dto = this.convertUserToDto(basicInfoEntity);
-            InviteUserEntity userEntity = collect.get(basicInfoEntity.getUid());
-            if (userEntity != null){
-                dto.setJoinTime(userEntity.getUpdateTime());
+        for (InviteUserEntity inviteUser:inviteUserEntities){
+            UserBasicInfoEntity basicInfoEntity = collect.get(inviteUser.getJoinUid());
+            if (basicInfoEntity == null){
+                basicInfoEntity = new UserBasicInfoEntity();
+                basicInfoEntity.setUid(inviteUser.getJoinUid());
             }
+            InviteUserDto dto = this.convertUserToDto(basicInfoEntity);
+            dto.setJoinTime(inviteUser.getUpdateTime());
+            dto.setStatus(inviteUser.getStatus());
             resultList.add(dto);
         }
+
         return resultList;
     }
 
