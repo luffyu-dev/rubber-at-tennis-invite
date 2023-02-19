@@ -17,6 +17,7 @@ import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.UserTennisInfoEntity;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
 import com.rubber.at.tennis.invite.api.dto.RecordTennisModel;
+import com.rubber.at.tennis.invite.service.util.MyDataUtil;
 import com.rubber.base.components.util.result.code.SysCode;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.extern.slf4j.Slf4j;
@@ -112,8 +113,8 @@ public class UserTennisService implements UserTennisApi {
         if(userTennisRecordService.recordTennis(model)){
             UserTennisInfoEntity  userTennisInfoEntity = getAndInit(model.getUserSession());
             Integer allTrainHours = userTennisInfoEntity.getAllTrainHours() + model.getRecordDuration();
-            Integer weekTrainHours = userTennisInfoEntity.getWeekTrainHours() + model.getRecordDuration();
-
+            boolean isSameWeek =MyDataUtil.isSameWeek(userTennisInfoEntity.getUpdateTime(),new Date());
+            Integer weekTrainHours = isSameWeek ?   userTennisInfoEntity.getWeekTrainHours() + model.getRecordDuration() : model.getRecordDuration();
             UserTennisInfoEntity upE = new UserTennisInfoEntity();
             upE.setId(userTennisInfoEntity.getId());
             upE.setAllTrainHours(allTrainHours);
@@ -136,8 +137,8 @@ public class UserTennisService implements UserTennisApi {
         int hour = userTennisRecordService.cancelRecordTennis(bizId,userSession);
         if (hour > 0){
             UserTennisInfoEntity  userTennisInfoEntity = getAndInit(userSession);
-            int allTrainHours = userTennisInfoEntity.getAllTrainHours() + hour;
-            int weekTrainHours = userTennisInfoEntity.getWeekTrainHours() + hour;
+            int allTrainHours = userTennisInfoEntity.getAllTrainHours() - hour;
+            int weekTrainHours = userTennisInfoEntity.getWeekTrainHours() - hour;
 
             UserTennisInfoEntity upE = new UserTennisInfoEntity();
             upE.setId(userTennisInfoEntity.getId());
@@ -194,7 +195,8 @@ public class UserTennisService implements UserTennisApi {
         // 网球训练的信息
         UserTrainInfo userTrainInfo = new UserTrainInfo();
         userTrainInfo.setAllHours(tennisInfo.getAllTrainHours());
-        userTrainInfo.setWeekHours(tennisInfo.getWeekTrainHours());
+        boolean isSameWeek = MyDataUtil.isSameWeek(tennisInfo.getUpdateTime(),new Date());
+        userTrainInfo.setWeekHours(isSameWeek ? tennisInfo.getWeekTrainHours() : 0);
         userTennis.setUserTrainInfo(userTrainInfo);
     }
 
