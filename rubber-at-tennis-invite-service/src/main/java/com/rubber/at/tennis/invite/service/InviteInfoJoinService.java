@@ -135,13 +135,13 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
         recordTennisModel.setUserSession(userSession);
         recordTennisModel.setBizId(infoEntity.getInviteCode());
         if (infoEntity.getStartTime() != null && infoEntity.getEndTime() != null){
-            recordTennisModel.setRecordDate(DateUtil.format(infoEntity.getStartTime(),"yyyy-MM-dd"));
+            recordTennisModel.setRecordDate(DateUtil.format(infoEntity.getStartTime(),"yyyy/MM/dd"));
             recordTennisModel.setRecordStart(infoEntity.getStartTime());
             recordTennisModel.setRecordEnd(infoEntity.getEndTime());
             Long time  = (infoEntity.getEndTime().getTime() - infoEntity.getStartTime().getTime()) / 1000 / 60;
             recordTennisModel.setRecordDuration(time < 0 ? 60 : time.intValue());
         }else {
-            recordTennisModel.setRecordDate(DateUtil.format(infoEntity.getJoinDeadline(),"yyyy-MM-dd"));
+            recordTennisModel.setRecordDate(DateUtil.format(infoEntity.getJoinDeadline(),"yyyy/MM/dd"));
             recordTennisModel.setRecordDuration(60);
         }
         userTennisApi.recordTennis(recordTennisModel);
