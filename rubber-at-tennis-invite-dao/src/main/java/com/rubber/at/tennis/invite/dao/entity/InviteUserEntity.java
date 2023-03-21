@@ -58,6 +58,7 @@ public class InviteUserEntity extends BaseEntity {
     /**
      * 版本号
      */
+    @Version
     @TableField("Fversion")
     private Integer version;
 

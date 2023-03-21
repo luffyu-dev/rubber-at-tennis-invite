@@ -21,6 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author luffyu
@@ -40,6 +44,10 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
     @Autowired
     private UserTennisApi userTennisApi;
 
+    /**
+     * 邀约锁
+     */
+    private static final Map<String,ReentrantLock>  INVITE_LOCK = new ConcurrentHashMap<>();
 
     /**
      * 新增一个邀请
@@ -49,20 +57,33 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
      */
     @Override
     public InviteCodeResponse join(InviteInfoCodeReq req) {
-        // 获取邀请详情
-        InviteInfoEntity infoEntity = inviteQueryComponent.getAndCheck(req.getInviteCode());
-        // 校验是否已经完成
-        this.doCheckInviteInfo(infoEntity);
+        ReentrantLock joinLock = buildInviteLock(req.getInviteCode());
+        try {
+            if(!joinLock.tryLock(500, TimeUnit.MILLISECONDS)){
+                log.error("获取锁失败,req={}",req);
+                return new InviteCodeResponse(req.getInviteCode());
+            }
+            // 获取邀请详情
+            InviteInfoEntity infoEntity = inviteQueryComponent.getAndCheck(req.getInviteCode());
+            // 校验是否已经完成
+            this.doCheckInviteInfo(infoEntity);
 
-        // 数据邀请对象
-        InviteJoinModel joinModel = new InviteJoinModel(req,infoEntity);
-        inviteJoinComponent.joinInvite(joinModel);
+            // 数据邀请对象
+            InviteJoinModel joinModel = new InviteJoinModel(req,infoEntity);
+            inviteJoinComponent.joinInvite(joinModel);
 
-        // 对接写入操作日期
-        doHandlerTennisRecord(req,infoEntity);
+            // 对接写入操作日期
+            doHandlerTennisRecord(req,infoEntity);
 
-        // 返回
-        return new InviteCodeResponse(req.getInviteCode());
+            // 返回
+            return new InviteCodeResponse(req.getInviteCode());
+        }catch (Exception e){
+            log.error("参与邀约出现异常{}",e.getMessage());
+            return new InviteCodeResponse(req.getInviteCode());
+        }finally {
+             joinLock.unlock();
+        }
+
     }
 
     /**
@@ -73,29 +94,41 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
      */
     @Override
     public InviteCodeResponse cancelJoin(InviteJoinReq req) {
-        if (Integer.valueOf(1).equals(req.getCancelType())){
-            InviteInfoEntity userInvite = inviteQueryComponent.getBySponsor(req.getInviteCode(),req.getUid());
-            // 校验是否可以编辑
-            if (InviteInfoStateEnums.CLOSE.getState().equals(userInvite.getStatus())
-                    || InviteInfoStateEnums.EXPIRED.getState().equals(userInvite.getStatus())){
-                throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
+        ReentrantLock joinLock = buildInviteLock(req.getInviteCode());
+        try {
+            if(!joinLock.tryLock(500, TimeUnit.MILLISECONDS)){
+                log.error("获取锁失败,req={}",req);
+                return new InviteCodeResponse(req.getInviteCode());
             }
-            inviteJoinComponent.cancelJoinInvite(req.getJoinUid(),userInvite);
-            return new InviteCodeResponse(req.getInviteCode());
-        }else {
-            // 取消自己参与的活动
-            // 校验活动是否存在
-            InviteInfoEntity inviteInfoEntity = inviteQueryComponent.getAndCheck(req.getInviteCode());
-            // 校验是否可以编辑
-            if (InviteInfoStateEnums.CLOSE.getState().equals(inviteInfoEntity.getStatus())
-                    || InviteInfoStateEnums.EXPIRED.getState().equals(inviteInfoEntity.getStatus())){
-                throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
-            }
-            inviteJoinComponent.cancelJoinInvite(req.getUid(),inviteInfoEntity);
+            if (Integer.valueOf(1).equals(req.getCancelType())) {
+                InviteInfoEntity userInvite = inviteQueryComponent.getBySponsor(req.getInviteCode(), req.getUid());
+                // 校验是否可以编辑
+                if (InviteInfoStateEnums.CLOSE.getState().equals(userInvite.getStatus())
+                        || InviteInfoStateEnums.EXPIRED.getState().equals(userInvite.getStatus())) {
+                    throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
+                }
+                inviteJoinComponent.cancelJoinInvite(req.getJoinUid(), userInvite);
+                return new InviteCodeResponse(req.getInviteCode());
+            } else {
+                // 取消自己参与的活动
+                // 校验活动是否存在
+                InviteInfoEntity inviteInfoEntity = inviteQueryComponent.getAndCheck(req.getInviteCode());
+                // 校验是否可以编辑
+                if (InviteInfoStateEnums.CLOSE.getState().equals(inviteInfoEntity.getStatus())
+                        || InviteInfoStateEnums.EXPIRED.getState().equals(inviteInfoEntity.getStatus())) {
+                    throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
+                }
+                inviteJoinComponent.cancelJoinInvite(req.getUid(), inviteInfoEntity);
 
-            // 取消关联的网球记录信息
-            userTennisApi.cancelTennisRecord(req,inviteInfoEntity.getInviteCode());
+                // 取消关联的网球记录信息
+                userTennisApi.cancelTennisRecord(req, inviteInfoEntity.getInviteCode());
+                return new InviteCodeResponse(req.getInviteCode());
+            }
+        }catch (Exception e){
+            log.error("参与邀约出现异常{}",e.getMessage());
             return new InviteCodeResponse(req.getInviteCode());
+        }finally {
+            joinLock.unlock();
         }
     }
 
@@ -145,6 +178,16 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
             recordTennisModel.setRecordDuration(60);
         }
         userTennisApi.recordTennis(recordTennisModel);
+    }
+
+
+    /**
+     * 创建邀约锁
+     * @param code
+     * @return
+     */
+    private ReentrantLock buildInviteLock(String code){
+        return INVITE_LOCK.getOrDefault(code, new ReentrantLock());
     }
 
 }

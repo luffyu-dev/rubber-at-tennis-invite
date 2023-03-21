@@ -1,6 +1,7 @@
 package com.rubber.at.tennis.invite.service.component;
 
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
+import com.rubber.at.tennis.invite.api.enums.InviteInfoStateEnums;
 import com.rubber.at.tennis.invite.api.enums.InviteJoinStateEnums;
 import com.rubber.at.tennis.invite.dao.dal.IInviteUserDal;
 import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
@@ -12,6 +13,7 @@ import com.rubber.base.components.util.result.code.SysCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -33,6 +35,9 @@ public class InviteJoinComponent {
      * 用户报名
      * @param joinModel
      */
+    @Transactional(
+            rollbackFor = Exception.class
+    )
     public void joinInvite(InviteJoinModel joinModel){
         try {
             InviteInfoCodeReq req = joinModel.getReq();
@@ -68,11 +73,18 @@ public class InviteJoinComponent {
     /**
      * 取消报名
      */
+    @Transactional(
+            rollbackFor = Exception.class
+    )
     public void cancelJoinInvite(Integer uid,InviteInfoEntity inviteInfoEntity){
         // 建议用户是否有参与
         InviteUserEntity joinUser = iInviteUserDal.getInviteJoinUser(inviteInfoEntity.getInviteCode(), uid);
         if (joinUser == null){
             throw new RubberServiceException(ErrorCodeEnums.USER_NOT_JOINED);
+        }
+        if (InviteJoinStateEnums.CLOSE.getState().equals(joinUser.getStatus())){
+            // 已取消
+            return;
         }
         joinUser.setUpdateTime(new Date());
         joinUser.setStatus(InviteJoinStateEnums.CLOSE.getState());

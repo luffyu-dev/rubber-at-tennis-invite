@@ -47,6 +47,7 @@ public class InviteQueryComponent {
     public InviteInfoEntity getAndCheck(String code){
         InviteInfoEntity entity = iInviteInfoDal.getByCode(code);
         if (entity == null){
+            log.error("code={}",code);
             throw new RubberServiceException(SysCode.PARAM_ERROR);
         }
         return entity;
