@@ -175,6 +175,13 @@ public class InviteInfoQueryService implements InviteInfoQueryApi {
                 stateEnums = InviteInfoStateEnums.FINISHED;
             }
         }
+
+        if (InviteInfoStateEnums.INVITING.equals(stateEnums) || InviteInfoStateEnums.EXPIRED.equals(stateEnums) || InviteInfoStateEnums.FINISHED.equals(stateEnums)){
+            if (entity.getEndTime() != null && entity.getEndTime().getTime() <= (new Date()).getTime()){
+                stateEnums = InviteInfoStateEnums.END;
+            }
+        }
+
         if (stateEnums != null){
             dto.setStatus(stateEnums.getState());
             dto.setStatusDesc(stateEnums.getDesc());

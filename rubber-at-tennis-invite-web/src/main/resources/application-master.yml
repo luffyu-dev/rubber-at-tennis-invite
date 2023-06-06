@@ -7,3 +7,4 @@ rubber:
           url: jdbc:mysql://10.26.108.182:3306/at_tennis?useUnicode=true&characterEncoding=utf8
           username: root
           password: JTg7yyAe
+          openUtf8mb4: true

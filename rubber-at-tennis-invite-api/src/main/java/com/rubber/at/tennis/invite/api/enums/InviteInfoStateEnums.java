@@ -23,6 +23,8 @@ public enum  InviteInfoStateEnums {
 
     FINISHED(70,"已满员"),
 
+    END(100,"已结束"),
+
     ;
 
     InviteInfoStateEnums(Integer state, String desc) {
