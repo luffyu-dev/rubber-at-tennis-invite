@@ -120,6 +120,12 @@ public class InviteInfoDto extends BaseUserSession {
     private Integer status;
     private String statusDesc;
 
+    /**
+     * 是否参数
+     */
+    private Integer joinStatus;
+    private String joinStatusDesc;
+
 
     /**
      * 高级设置

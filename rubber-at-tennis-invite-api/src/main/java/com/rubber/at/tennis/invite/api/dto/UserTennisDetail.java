@@ -30,7 +30,7 @@ public class UserTennisDetail {
      * 开始打球的时间
      */
     @JSONField(format = "yyyy-MM-dd")
-    private Date startPlayDate;
+    private String startPlayDate;
 
     /**
      * 网龄-年

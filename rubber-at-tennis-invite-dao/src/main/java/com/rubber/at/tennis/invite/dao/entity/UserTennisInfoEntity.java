@@ -68,6 +68,13 @@ public class UserTennisInfoEntity extends BaseEntity {
     private Integer weekTrainHours;
 
     /**
+     * 本周工作内容
+     */
+    @TableField("Fweek_version")
+    private String weekVersion;
+
+
+    /**
      * 备注
      */
     @TableField("Fremark")

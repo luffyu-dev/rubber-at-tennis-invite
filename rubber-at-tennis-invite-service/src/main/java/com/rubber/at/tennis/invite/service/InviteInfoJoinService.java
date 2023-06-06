@@ -103,10 +103,10 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
             if (Integer.valueOf(1).equals(req.getCancelType())) {
                 InviteInfoEntity userInvite = inviteQueryComponent.getBySponsor(req.getInviteCode(), req.getUid());
                 // 校验是否可以编辑
-                if (InviteInfoStateEnums.CLOSE.getState().equals(userInvite.getStatus())
-                        || InviteInfoStateEnums.EXPIRED.getState().equals(userInvite.getStatus())) {
-                    throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
-                }
+//                if (InviteInfoStateEnums.CLOSE.getState().equals(userInvite.getStatus())
+//                        || InviteInfoStateEnums.EXPIRED.getState().equals(userInvite.getStatus())) {
+//                    throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
+//                }
                 inviteJoinComponent.cancelJoinInvite(req.getJoinUid(), userInvite);
                 return new InviteCodeResponse(req.getInviteCode());
             } else {

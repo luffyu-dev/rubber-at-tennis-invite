@@ -113,12 +113,18 @@ public class UserTennisService implements UserTennisApi {
         if(userTennisRecordService.recordTennis(model)){
             UserTennisInfoEntity  userTennisInfoEntity = getAndInit(model.getUserSession());
             Integer allTrainHours = userTennisInfoEntity.getAllTrainHours() + model.getRecordDuration();
-            boolean isSameWeek =MyDataUtil.isSameWeek(userTennisInfoEntity.getUpdateTime(),new Date());
-            Integer weekTrainHours = isSameWeek ?   userTennisInfoEntity.getWeekTrainHours() + model.getRecordDuration() : model.getRecordDuration();
+            Integer weekTrainHours = userTennisInfoEntity.getWeekTrainHours();
+            String weekVersion = getWeekVersion();
+            if (weekVersion.equals(userTennisInfoEntity.getWeekVersion())){
+                weekTrainHours += model.getRecordDuration();
+            }else {
+                weekTrainHours = model.getRecordDuration();
+            }
             UserTennisInfoEntity upE = new UserTennisInfoEntity();
             upE.setId(userTennisInfoEntity.getId());
             upE.setAllTrainHours(allTrainHours);
             upE.setWeekTrainHours(weekTrainHours);
+            upE.setWeekVersion(weekVersion);
             upE.setUpdateTime(new Date());
             iUserTennisInfoDal.updateById(upE);
         }
@@ -161,10 +167,22 @@ public class UserTennisService implements UserTennisApi {
             userTennisInfoEntity = initUserTennis(userSession);
             iUserTennisInfoDal.save(userTennisInfoEntity);
         }
+        // 生成weekversion
+        if (!getWeekVersion().equals(userTennisInfoEntity.getWeekVersion())){
+            userTennisInfoEntity.setWeekTrainHours(0);
+        }
         return userTennisInfoEntity;
     }
 
 
+    /**
+     * 获取周版本
+     * @return
+     */
+    private String getWeekVersion(){
+        Date date = new Date();
+        return DateUtil.year(date)+ "_" +DateUtil.weekOfYear(date);
+    }
 
     /**
      * 查询网球的基本信息
@@ -186,7 +204,7 @@ public class UserTennisService implements UserTennisApi {
         userTennis.setLevelMatrix(levelMatrixDto);
         Date startPlayDate = tennisInfo.getStartPlayDate();
         if (startPlayDate != null){
-            userTennis.setStartPlayDate(startPlayDate);
+            userTennis.setStartPlayDate(DateUtil.formatDate(startPlayDate));
             long betweenMonth = DateUtil.betweenMonth(startPlayDate,new Date(),false);
             userTennis.setYearDate((int)betweenMonth / 12);
             userTennis.setMonthDate((int)betweenMonth % 12);
@@ -215,6 +233,7 @@ public class UserTennisService implements UserTennisApi {
         entity.setWeekTrainHours(0);
         entity.setAllTrainHours(0);
         entity.setNtrp(NtrpEnums.LEVEL_2_5.getNtrp());
+        entity.setWeekVersion(getWeekVersion());
         return entity;
     }
 

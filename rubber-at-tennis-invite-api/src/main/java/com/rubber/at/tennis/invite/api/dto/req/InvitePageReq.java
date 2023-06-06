@@ -32,4 +32,10 @@ public class InvitePageReq extends BaseUserSession {
      * 搜索条件
      */
     private String searchValue;
+
+
+    /**
+     * 调用位置
+     */
+    private String invoker;
 }

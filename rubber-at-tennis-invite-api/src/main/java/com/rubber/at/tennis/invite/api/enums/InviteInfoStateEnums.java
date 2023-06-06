@@ -12,15 +12,16 @@ public enum  InviteInfoStateEnums {
     /**
      * 邀请的状态
      */
+
+    INIT(0,"待发布"),
+
     CLOSE(10,"已取消"),
 
-    EXPIRED(11,"已结束"),
+    EXPIRED(11,"已截止"),
 
-    INIT(20,"待发布"),
+    INVITING(50,"报名中"),
 
-    INVITING(50,"进行中"),
-
-    FINISHED(70,"已满额"),
+    FINISHED(70,"已满员"),
 
     ;
 
@@ -70,6 +71,7 @@ public enum  InviteInfoStateEnums {
         switch (stateEnums){
             case INIT:
             case FINISHED:
+            case EXPIRED:
                 return true;
             default:
                 return false;

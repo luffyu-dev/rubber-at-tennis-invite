@@ -97,7 +97,7 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
         initConvert(infoDB,dto);
 
         // 修改时候的状态控制
-        InviteInfoStateEnums nowState = InviteInfoStateEnums.getState(dto.getStatus());
+        InviteInfoStateEnums nowState = InviteInfoStateEnums.getState(infoDB.getStatus());
         if (nowState != null && !InviteInfoStateEnums.INVITING.equals(nowState)){
             switch (nowState){
                 case FINISHED:
@@ -111,12 +111,13 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
                     }
                     break;
                 case INIT:
-                case CLOSE:
-                default:
                     if (Integer.valueOf(1).equals(dto.getAutoPublished())){
                         infoDB.setStatus(InviteInfoStateEnums.INVITING.getState());
-                        break;
                     }
+                    break;
+                case CLOSE:
+                default:
+                   break;
             }
         }
         // 保存数据
@@ -135,8 +136,9 @@ public class InviteInfoApplyService implements InviteInfoApplyApi {
     public InviteCodeResponse published(InviteInfoCodeReq dto) {
         InviteInfoEntity infoEntity = inviteQueryComponent.getBySponsor(dto.getInviteCode(), dto.getUid());
         // 数据转换
-        if (!InviteInfoStateEnums.isForPublish(infoEntity.getStatus())){
-            throw new RubberServiceException(SysCode.PARAM_ERROR);
+        if (InviteInfoStateEnums.isForPublish(infoEntity.getStatus())){
+            infoEntity.setStatus(InviteInfoStateEnums.INVITING.getState());
+            inviteApplyComponent.updateInvite(infoEntity);
         }
         return new InviteCodeResponse(infoEntity.getInviteCode());
     }

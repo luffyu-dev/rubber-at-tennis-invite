@@ -232,4 +232,9 @@ public class InviteInfoEntity extends BaseEntity {
     private Integer autoJoin ;
 
 
+    /**
+     * 是否参数
+     */
+    @TableField(exist = false)
+    private boolean loginUserJoinFlag;
 }

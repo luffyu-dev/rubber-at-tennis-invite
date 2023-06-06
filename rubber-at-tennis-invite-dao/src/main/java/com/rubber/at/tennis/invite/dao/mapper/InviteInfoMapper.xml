@@ -38,6 +38,14 @@
         <if test="condition.searchValue != null">
             and  a.Finvite_title like concat('%',#{condition.searchValue},'%')
         </if>
+
+        <if test="condition.engTimeLine != null">
+            and (a.Fend_time is null or a.Fend_time > #{condition.engTimeLine})
+        </if>
+
+        <if test="condition.createTimeLine != null">
+            and  a.Fcreate_time > #{condition.createTimeLine}
+        </if>
         GROUP BY a.Finvite_code
         order by b.Fupdate_time desc
     </select>
