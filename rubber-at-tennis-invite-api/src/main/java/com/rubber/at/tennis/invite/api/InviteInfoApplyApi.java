@@ -8,6 +8,7 @@ import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
  * @author luffyu
  * Created on 2022/8/29
  */
+@Deprecated
 public interface InviteInfoApplyApi {
 
 

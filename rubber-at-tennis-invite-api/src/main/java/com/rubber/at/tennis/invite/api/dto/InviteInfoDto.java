@@ -188,4 +188,10 @@ public class InviteInfoDto extends BaseUserSession {
      */
     private Integer autoJoin ;
 
+
+    /**
+     * 配置字段
+     */
+    private JSONObject configField;
+
 }

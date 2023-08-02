@@ -10,6 +10,7 @@ import com.rubber.base.components.util.result.page.ResultPage;
  * @author luffyu
  * Created on 2022/8/29
  */
+@Deprecated
 public interface InviteInfoQueryApi {
 
 
