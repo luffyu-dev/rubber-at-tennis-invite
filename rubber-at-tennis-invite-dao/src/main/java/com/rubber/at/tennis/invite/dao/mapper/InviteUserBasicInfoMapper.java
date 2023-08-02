@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author rockyu
  * @since 2022-10-16
  */
-public interface UserBasicInfoMapper extends BaseMapper<UserBasicInfoEntity> {
+public interface InviteUserBasicInfoMapper extends BaseMapper<UserBasicInfoEntity> {
 
 }

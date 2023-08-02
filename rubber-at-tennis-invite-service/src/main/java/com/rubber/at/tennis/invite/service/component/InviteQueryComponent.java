@@ -6,7 +6,7 @@ import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.enums.InviteJoinStateEnums;
 import com.rubber.at.tennis.invite.dao.dal.IInviteInfoDal;
 import com.rubber.at.tennis.invite.dao.dal.IInviteUserDal;
-import com.rubber.at.tennis.invite.dao.dal.IUserBasicInfoDal;
+import com.rubber.at.tennis.invite.dao.dal.IInviteUserBasicInfoDal;
 import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.InviteUserEntity;
 import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
@@ -37,7 +37,7 @@ public class InviteQueryComponent {
     private IInviteUserDal iInviteUserDal;
 
     @Resource
-    private IUserBasicInfoDal iUserBasicInfoDal;
+    private IInviteUserBasicInfoDal iInviteUserBasicInfoDal;
 
 
 
@@ -83,7 +83,7 @@ public class InviteQueryComponent {
      * 获取发起人信息
      */
     public InviteUserDto getSponsorInfo(InviteInfoEntity infoEntity){
-        UserBasicInfoEntity entity = iUserBasicInfoDal.getByUid(infoEntity.getUid());
+        UserBasicInfoEntity entity = iInviteUserBasicInfoDal.getByUid(infoEntity.getUid());
         return convertUserToDto(entity);
     }
 
@@ -97,7 +97,7 @@ public class InviteQueryComponent {
             return new ArrayList<>();
         }
         Set<Integer> ids = inviteUserEntities.stream().map(InviteUserEntity::getJoinUid).collect(Collectors.toSet());
-        List<UserBasicInfoEntity> userBasicInfoList = iUserBasicInfoDal.queryByUid(ids);
+        List<UserBasicInfoEntity> userBasicInfoList = iInviteUserBasicInfoDal.queryByUid(ids);
         Map<Integer, UserBasicInfoEntity> collect = new HashMap<>();
         if (CollUtil.isNotEmpty(userBasicInfoList)){
             collect = userBasicInfoList.stream().collect(Collectors.toMap(UserBasicInfoEntity::getUid, o -> o, (o1, o2) -> o1));

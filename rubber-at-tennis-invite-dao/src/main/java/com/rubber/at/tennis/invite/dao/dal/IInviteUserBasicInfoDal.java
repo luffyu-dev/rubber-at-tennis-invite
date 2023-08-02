@@ -14,7 +14,7 @@ import java.util.List;
  * @author rockyu
  * @since 2022-10-16
  */
-public interface IUserBasicInfoDal extends IBaseAdminService<UserBasicInfoEntity> {
+public interface IInviteUserBasicInfoDal extends IBaseAdminService<UserBasicInfoEntity> {
 
     /**
      * 通过uid 查询用户的基础信息

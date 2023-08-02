@@ -16,7 +16,19 @@ public class TableShardingConfig {
         RubberShardingConfig rubberShardingConfig = new RubberShardingConfig();
         rubberShardingConfig.table("t_user_basic_info")
                 .realDb("user_db")
-                .realTable("t_user_basic_info");
+                .realTable("t_user_basic_info")
+                .end()
+                .table("t_user_account_info")
+                .realDb("user_db")
+                .realTable("t_user_account_info")
+                .end()
+                .table("t_global_uid_generator")
+                .realDb("user_db")
+                .realTable("t_global_uid_generator")
+                .end()
+                .table("t_global_field_dict")
+                .realDb("user_db")
+                .realTable("t_global_field_dict");
         return rubberShardingConfig;
     }
 }

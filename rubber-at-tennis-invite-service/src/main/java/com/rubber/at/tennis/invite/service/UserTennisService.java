@@ -11,7 +11,7 @@ import com.rubber.at.tennis.invite.api.dto.UserTennisDetail;
 import com.rubber.at.tennis.invite.api.dto.UserTrainInfo;
 import com.rubber.at.tennis.invite.api.dto.req.UserTennisDateReq;
 import com.rubber.at.tennis.invite.api.enums.NtrpEnums;
-import com.rubber.at.tennis.invite.dao.dal.IUserBasicInfoDal;
+import com.rubber.at.tennis.invite.dao.dal.IInviteUserBasicInfoDal;
 import com.rubber.at.tennis.invite.dao.dal.IUserTennisInfoDal;
 import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.UserTennisInfoEntity;
@@ -45,7 +45,7 @@ public class UserTennisService implements UserTennisApi {
 
 
     @Autowired
-    private IUserBasicInfoDal iUserBasicInfoDal;
+    private IInviteUserBasicInfoDal iInviteUserBasicInfoDal;
 
     /**
      * 查询用户的网球相关信息
@@ -246,7 +246,7 @@ public class UserTennisService implements UserTennisApi {
         if (StrUtil.isEmpty(dto.getAvatarUrl()) || StrUtil.isEmpty(dto.getNickName())){
             return;
         }
-        UserBasicInfoEntity userBasicInfo = iUserBasicInfoDal.getByUid(dto.getUid());
+        UserBasicInfoEntity userBasicInfo = iInviteUserBasicInfoDal.getByUid(dto.getUid());
         if (userBasicInfo == null){
             userBasicInfo = new UserBasicInfoEntity();
             userBasicInfo.setUid(dto.getUid());
@@ -255,14 +255,14 @@ public class UserTennisService implements UserTennisApi {
             userBasicInfo.setCreateTime(new Date());
             userBasicInfo.setModifyTime(new Date());
             userBasicInfo.setVersion(1);
-            iUserBasicInfoDal.save(userBasicInfo);
+            iInviteUserBasicInfoDal.save(userBasicInfo);
             return;
         }
         if (!dto.getAvatarUrl().equals(userBasicInfo.getUserAvatar()) || !dto.getNickName().equals(userBasicInfo.getUserNick())){
             userBasicInfo.setUserNick(dto.getNickName());
             userBasicInfo.setUserAvatar(dto.getAvatarUrl());
             userBasicInfo.setModifyTime(new Date());
-            iUserBasicInfoDal.updateById(userBasicInfo);
+            iInviteUserBasicInfoDal.updateById(userBasicInfo);
         }
     }
 

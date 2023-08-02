@@ -2,8 +2,8 @@ package com.rubber.at.tennis.invite.dao.dal.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
-import com.rubber.at.tennis.invite.dao.mapper.UserBasicInfoMapper;
-import com.rubber.at.tennis.invite.dao.dal.IUserBasicInfoDal;
+import com.rubber.at.tennis.invite.dao.mapper.InviteUserBasicInfoMapper;
+import com.rubber.at.tennis.invite.dao.dal.IInviteUserBasicInfoDal;
 import com.rubber.base.components.mysql.plugins.admin.BaseAdminService;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import java.util.List;
  * @since 2022-10-16
  */
 @Service
-public class UserBasicInfoDalImpl extends BaseAdminService<UserBasicInfoMapper, UserBasicInfoEntity> implements IUserBasicInfoDal {
+public class InviteUserBasicInfoDalImpl extends BaseAdminService<InviteUserBasicInfoMapper, UserBasicInfoEntity> implements IInviteUserBasicInfoDal {
 
     /**
      * 通过uid 查询用户的基础信息
