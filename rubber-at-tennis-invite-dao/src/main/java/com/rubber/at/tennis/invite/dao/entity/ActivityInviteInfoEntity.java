@@ -155,6 +155,7 @@ public class ActivityInviteInfoEntity extends BaseEntity {
      * 版本号
      */
     @TableField("Fversion")
+    @Version
     private Integer version;
 
     /**

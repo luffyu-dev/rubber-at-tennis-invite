@@ -1,20 +1,22 @@
 package com.rubber.at.tennis.invite.service;
 
 import cn.hutool.core.date.DateUtil;
-import com.rubber.at.tennis.invite.api.InviteInfoJoinApi;
+import com.rubber.at.tennis.invite.api.ActivityInviteApplyApi;
 import com.rubber.at.tennis.invite.api.UserTennisApi;
+import com.rubber.at.tennis.invite.api.dto.ApplyInviteInfoDto;
+import com.rubber.at.tennis.invite.api.dto.RecordTennisModel;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
-import com.rubber.at.tennis.invite.api.dto.req.InviteJoinReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
-import com.rubber.at.tennis.invite.api.enums.InviteInfoStateEnums;
-import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
+import com.rubber.at.tennis.invite.api.enums.ActivityInviteStateEnums;
 import com.rubber.at.tennis.invite.api.enums.RecordTypeEnums;
+import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
 import com.rubber.at.tennis.invite.service.common.exception.ErrorCodeEnums;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
-import com.rubber.at.tennis.invite.service.component.InviteJoinComponent;
-import com.rubber.at.tennis.invite.service.component.InviteQueryComponent;
+import com.rubber.at.tennis.invite.service.component.ActivityInviteApplyComponent;
+import com.rubber.at.tennis.invite.service.component.ActivityInviteQueryComponent;
+import com.rubber.at.tennis.invite.service.component.InviteUserJoinComponent;
 import com.rubber.at.tennis.invite.service.model.InviteJoinModel;
-import com.rubber.at.tennis.invite.api.dto.RecordTennisModel;
+import com.rubber.base.components.util.result.code.SysCode;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,18 +30,20 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author luffyu
- * Created on 2022/9/3
+ * Created on 2023/8/4
  */
 @Slf4j
-@Service
-public class InviteInfoJoinService implements InviteInfoJoinApi {
+@Service("activityInviteApplyApi")
+public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
 
     @Autowired
-    private InviteQueryComponent inviteQueryComponent;
-
+    private ActivityInviteApplyComponent activityInviteApplyComponent;
 
     @Autowired
-    private InviteJoinComponent inviteJoinComponent;
+    private ActivityInviteQueryComponent inviteQueryComponent;
+
+    @Autowired
+    private InviteUserJoinComponent inviteUserJoinComponent;
 
     @Autowired
     private UserTennisApi userTennisApi;
@@ -47,30 +51,71 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
     /**
      * 邀约锁
      */
-    private static final Map<String,ReentrantLock>  INVITE_LOCK = new ConcurrentHashMap<>();
+    private static final Map<String,ReentrantLock> INVITE_LOCK = new ConcurrentHashMap<>();
 
     /**
-     * 新增一个邀请
+     * 保存活动邀约信息
      *
-     * @param req 当前的请求
-     * @return 返回邀请信息
+     * @param dto
      */
     @Override
-    public InviteCodeResponse join(InviteInfoCodeReq req) {
+    public InviteCodeResponse saveActivityInviteInfo(ApplyInviteInfoDto dto) {
+        // 数据校验和转换
+        doCheckDto(dto);
+        // 保存数据
+        ActivityInviteInfoEntity entity = activityInviteApplyComponent.saveInvite(dto);
+
+        return new InviteCodeResponse(entity.getInviteCode());
+    }
+
+    /**
+     * 发布活动
+     *
+     * @param req
+     */
+    @Override
+    public InviteCodeResponse publishInvite(InviteInfoCodeReq req) {
+        ActivityInviteInfoEntity inviteInfoEntity = activityInviteApplyComponent.verifyAndGetManagerInvite(req);
+        inviteInfoEntity.setStatus(ActivityInviteStateEnums.PUBLISHED.getState());
+        activityInviteApplyComponent.updateInviteByCode(inviteInfoEntity,req);
+        return new InviteCodeResponse(inviteInfoEntity.getInviteCode());
+    }
+
+    /**
+     * 取消活动
+     *
+     * @param req
+     */
+    @Override
+    public InviteCodeResponse closeInvite(InviteInfoCodeReq req) {
+        ActivityInviteInfoEntity inviteInfoEntity = activityInviteApplyComponent.verifyAndGetManagerInvite(req);
+        inviteInfoEntity.setStatus(ActivityInviteStateEnums.CLOSE.getState());
+        activityInviteApplyComponent.updateInviteByCode(inviteInfoEntity,req);
+        return new InviteCodeResponse(inviteInfoEntity.getInviteCode());
+    }
+
+    /**
+     * 加入活动
+     * 带多个人参加
+     *
+     * @param req
+     */
+    @Override
+    public InviteCodeResponse joinInvite(InviteInfoCodeReq req) {
         ReentrantLock joinLock = buildInviteLock(req.getInviteCode());
+
         try {
             if(!joinLock.tryLock(500, TimeUnit.MILLISECONDS)){
                 log.error("获取锁失败,req={}",req);
                 return new InviteCodeResponse(req.getInviteCode());
             }
             // 获取邀请详情
-            InviteInfoEntity infoEntity = inviteQueryComponent.getAndCheck(req.getInviteCode());
+            ActivityInviteInfoEntity infoEntity = inviteQueryComponent.getByCode(req);
             // 校验是否已经完成
             this.doCheckInviteInfo(infoEntity);
-
             // 数据邀请对象
             InviteJoinModel joinModel = new InviteJoinModel(req,infoEntity);
-            inviteJoinComponent.joinInvite(joinModel);
+            inviteUserJoinComponent.joinInvite(joinModel);
 
             // 对接写入操作日期
             doHandlerTennisRecord(req,infoEntity);
@@ -81,49 +126,36 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
             log.error("参与邀约出现异常{}",e.getMessage());
             return new InviteCodeResponse(req.getInviteCode());
         }finally {
-             joinLock.unlock();
+            joinLock.unlock();
         }
-
     }
 
     /**
-     * 参与人取消报名
+     * 取消加入活动
      *
      * @param req
-     * @return
      */
     @Override
-    public InviteCodeResponse cancelJoin(InviteJoinReq req) {
+    public InviteCodeResponse cancelJoinInvite(InviteInfoCodeReq req) {
         ReentrantLock joinLock = buildInviteLock(req.getInviteCode());
         try {
             if(!joinLock.tryLock(500, TimeUnit.MILLISECONDS)){
                 log.error("获取锁失败,req={}",req);
                 return new InviteCodeResponse(req.getInviteCode());
             }
-            if (Integer.valueOf(1).equals(req.getCancelType())) {
-                InviteInfoEntity userInvite = inviteQueryComponent.getBySponsor(req.getInviteCode(), req.getUid());
-                // 校验是否可以编辑
-//                if (InviteInfoStateEnums.CLOSE.getState().equals(userInvite.getStatus())
-//                        || InviteInfoStateEnums.EXPIRED.getState().equals(userInvite.getStatus())) {
-//                    throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
-//                }
-                inviteJoinComponent.cancelJoinInvite(req.getJoinUid(), userInvite);
-                return new InviteCodeResponse(req.getInviteCode());
-            } else {
-                // 取消自己参与的活动
-                // 校验活动是否存在
-                InviteInfoEntity inviteInfoEntity = inviteQueryComponent.getAndCheck(req.getInviteCode());
-                // 校验是否可以编辑
-                if (InviteInfoStateEnums.CLOSE.getState().equals(inviteInfoEntity.getStatus())
-                        || InviteInfoStateEnums.EXPIRED.getState().equals(inviteInfoEntity.getStatus())) {
-                    throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
-                }
-                inviteJoinComponent.cancelJoinInvite(req.getUid(), inviteInfoEntity);
-
-                // 取消关联的网球记录信息
-                userTennisApi.cancelTennisRecord(req, inviteInfoEntity.getInviteCode());
-                return new InviteCodeResponse(req.getInviteCode());
+            // 取消自己参与的活动
+            // 校验活动是否存在
+            ActivityInviteInfoEntity infoEntity = inviteQueryComponent.getByCode(req);
+            // 校验是否可以编辑
+            if (ActivityInviteStateEnums.CLOSE.getState().equals(infoEntity.getStatus())) {
+                throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
             }
+            inviteUserJoinComponent.cancelJoinInvite(req.getUid(), infoEntity);
+            // 取消关联的网球记录信息
+            userTennisApi.cancelTennisRecord(req, infoEntity.getInviteCode());
+
+            return new InviteCodeResponse(req.getInviteCode());
+
         }catch (Exception e){
             log.error("参与邀约出现异常{}",e.getMessage());
             return new InviteCodeResponse(req.getInviteCode());
@@ -134,17 +166,36 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
 
 
     /**
+     * 数据逻辑校验
+     */
+    private void doCheckDto(ApplyInviteInfoDto dto){
+        if (dto.getInviteNumber() <= 0){
+            log.error("邀请人数量至少有1人");
+            throw new RubberServiceException(SysCode.PARAM_ERROR);
+        }
+    }
+
+
+
+    /**
+     * 创建邀约锁
+     * @param code
+     * @return
+     */
+    private ReentrantLock buildInviteLock(String code){
+        return INVITE_LOCK.getOrDefault(code, new ReentrantLock());
+    }
+
+
+
+    /**
      * 校验邀请事件是否可参与
      * @param infoEntity 当前的邀请对象
      */
-    private void doCheckInviteInfo(InviteInfoEntity infoEntity){
+    private void doCheckInviteInfo(ActivityInviteInfoEntity infoEntity){
         // 校验是否已经完成
-        if (InviteInfoStateEnums.CLOSE.getState().equals(infoEntity.getStatus())){
+        if (!ActivityInviteStateEnums.PUBLISHED.getState().equals(infoEntity.getStatus())){
             throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
-        }
-        // 校验是否已经完成
-        if (InviteInfoStateEnums.FINISHED.getState().equals(infoEntity.getStatus())){
-            throw new RubberServiceException(ErrorCodeEnums.INVITE_FINISHED);
         }
         if (infoEntity.getJoinNumber() >= infoEntity.getInviteNumber()){
             // 邀请人员已完成
@@ -158,10 +209,11 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
     }
 
 
+
     /**
      * 写入tennis的记录
      */
-    private void doHandlerTennisRecord(BaseUserSession userSession,InviteInfoEntity infoEntity){
+    private void doHandlerTennisRecord(BaseUserSession userSession, ActivityInviteInfoEntity infoEntity){
         RecordTennisModel recordTennisModel = new RecordTennisModel();
         recordTennisModel.setRecordTitle(infoEntity.getInviteTitle());
         recordTennisModel.setRecordType(RecordTypeEnums.INVITE);
@@ -181,18 +233,4 @@ public class InviteInfoJoinService implements InviteInfoJoinApi {
     }
 
 
-    /**
-     * 创建邀约锁
-     * @param code
-     * @return
-     */
-    private ReentrantLock buildInviteLock(String code){
-        return INVITE_LOCK.getOrDefault(code, new ReentrantLock());
-    }
-
 }
-
-
-
-
-

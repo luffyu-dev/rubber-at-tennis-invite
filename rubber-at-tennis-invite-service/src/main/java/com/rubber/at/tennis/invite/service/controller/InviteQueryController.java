@@ -1,10 +1,10 @@
 package com.rubber.at.tennis.invite.service.controller;
 
-import com.rubber.at.tennis.invite.api.InviteInfoQueryApi;
-import com.rubber.at.tennis.invite.api.dto.InviteInfoDto;
+import com.rubber.at.tennis.invite.api.ActivityInviteQueryApi;
+import com.rubber.at.tennis.invite.api.dto.ActivityInviteDetailDto;
+import com.rubber.at.tennis.invite.api.dto.ActivityInviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.req.InvitePageReq;
-import com.rubber.at.tennis.invite.api.dto.response.InviteInfoResponse;
 import com.rubber.base.components.util.annotation.NeedLogin;
 import com.rubber.base.components.util.result.ResultMsg;
 import com.rubber.base.components.util.result.page.ResultPage;
@@ -21,7 +21,7 @@ import javax.annotation.Resource;
 public class InviteQueryController {
 
     @Resource
-    private InviteInfoQueryApi inviteInfoQueryApi;
+    private ActivityInviteQueryApi activityInviteQueryApi;
 
 
     /**
@@ -31,7 +31,7 @@ public class InviteQueryController {
      */
     @PostMapping("/info")
     public ResultMsg getInviteInfo(@RequestBody InviteInfoCodeReq req){
-        InviteInfoResponse inviteInfo = inviteInfoQueryApi.getInviteInfo(req);
+        ActivityInviteDetailDto inviteInfo = activityInviteQueryApi.getDetailInfo(req);
         return ResultMsg.success(inviteInfo);
     }
 
@@ -44,7 +44,7 @@ public class InviteQueryController {
     @NeedLogin
     @PostMapping("/user-list")
     public ResultMsg listPage(@RequestBody InvitePageReq req){
-        ResultPage<InviteInfoDto> inviteInfo = inviteInfoQueryApi.listPage(req);
+        ResultPage<ActivityInviteInfoDto> inviteInfo = activityInviteQueryApi.queryUserInvite(req);
         return ResultMsg.success(inviteInfo);
     }
 

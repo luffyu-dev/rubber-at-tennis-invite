@@ -1,7 +1,13 @@
 package com.rubber.at.tennis.invite.web;
 
+import com.alibaba.fastjson.JSONObject;
+import com.rubber.at.tennis.invite.api.ActivityInviteApplyApi;
+import com.rubber.at.tennis.invite.api.ActivityInviteQueryApi;
 import com.rubber.at.tennis.invite.api.UserTennisApi;
+import com.rubber.at.tennis.invite.api.dto.ActivityInviteDetailDto;
+import com.rubber.at.tennis.invite.api.dto.ApplyInviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.UserTennisDetail;
+import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.service.UserTennisService;
 import com.rubber.at.tennis.invite.api.enums.RecordTypeEnums;
 import com.rubber.at.tennis.invite.api.dto.RecordTennisModel;
@@ -18,33 +24,54 @@ import org.springframework.context.annotation.ComponentScan;
 @MapperScan("com.rubber.**.dao.mapper")
 class RubberServerArchetypeWebApplicationTests {
 
-    @Autowired
-    public UserTennisApi userTennisApi;
 
     @Autowired
-    private UserTennisService tennisService;
+    private ActivityInviteApplyApi activityInviteApplyApi;
+
+
+    @Autowired
+    private ActivityInviteQueryApi activityInviteQueryApi;
+
 
     @Test
-    public void doTest(){
+    public void doSave(){
 
-        BaseUserSession baseUserSession = new BaseUserSession();
-        baseUserSession.setUid(100000);
-        UserTennisDetail userTennisInfo = userTennisApi.getUserTennisInfo(baseUserSession);
-        System.out.println(userTennisInfo);
+        ApplyInviteInfoDto dto = new ApplyInviteInfoDto();
+        dto.setInviteCode("AICDJ1iD9dKKotKUp4Q");
+        dto.setUid(10000001);
+//        dto.setName("这是一个测试");
+//        dto.setInviteNumber(4);
+//
+//        dto.setAutoPublished(1);
+//
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("k1","v1");
+//        jsonObject.put("k2","v2");
+//
+//        dto.setConfigField(jsonObject);
+//        activityInviteApplyApi.saveActivityInviteInfo(dto);
 
-        RecordTennisModel model = new RecordTennisModel();
-        model.setUserSession(baseUserSession);
-        model.setRecordType(RecordTypeEnums.INVITE);
-        model.setRecordDuration(120);
-        model.setRecordTitle("邀约训练");
+        activityInviteApplyApi.cancelJoinInvite(dto);
+
+        //activityInviteApplyApi.closeInvite(dto);
+
+        //activityInviteApplyApi.publishInvite(dto);
 
 
-        tennisService.recordTennis(model);
-
-
-        UserTennisDetail userTennisInfo2 = userTennisApi.getUserTennisInfo(baseUserSession);
-        System.out.println(userTennisInfo);
 
     }
 
+    @Test
+    public void doQuery(){
+        InviteInfoCodeReq req = new InviteInfoCodeReq();
+        req.setInviteCode("AICDJ1iD9dKKotKUp4Q");
+        req.setUid(10000001);
+
+        ActivityInviteDetailDto detailInfo = activityInviteQueryApi.getDetailInfo(req);
+
+        activityInviteQueryApi.queryUserInvite(req);
+
+
+
+    }
 }

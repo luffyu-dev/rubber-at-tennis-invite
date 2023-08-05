@@ -13,4 +13,13 @@ import com.rubber.base.components.mysql.plugins.admin.IBaseAdminService;
  */
 public interface IActivityInviteInfoDal extends IBaseAdminService<ActivityInviteInfoEntity> {
 
+
+
+    ActivityInviteInfoEntity getByCode(String code);
+
+
+    ActivityInviteInfoEntity getByManagerCode(String code, Integer managerUid);
+
+
+
 }

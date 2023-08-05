@@ -3,6 +3,8 @@ package com.rubber.at.tennis.invite.dao.dal;
 import com.rubber.at.tennis.invite.dao.entity.InviteConfigFieldEntity;
 import com.rubber.base.components.mysql.plugins.admin.IBaseAdminService;
 
+import java.util.List;
+
 /**
  * <p>
  * 邀约详情配置表 服务类
@@ -13,4 +15,12 @@ import com.rubber.base.components.mysql.plugins.admin.IBaseAdminService;
  */
 public interface IInviteConfigFieldDal extends IBaseAdminService<InviteConfigFieldEntity> {
 
+
+
+    void removeAndSaveList(String inviteCode, List<InviteConfigFieldEntity> inviteConfigFieldEntityList);
+
+
+
+
+    List<InviteConfigFieldEntity> queryByCode(String code);
 }

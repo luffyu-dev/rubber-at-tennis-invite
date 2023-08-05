@@ -1,10 +1,13 @@
 package com.rubber.at.tennis.invite.dao.dal.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rubber.at.tennis.invite.dao.entity.InviteJoinUserEntity;
 import com.rubber.at.tennis.invite.dao.mapper.InviteJoinUserMapper;
 import com.rubber.at.tennis.invite.dao.dal.IInviteJoinUserDal;
 import com.rubber.base.components.mysql.plugins.admin.BaseAdminService;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * <p>
@@ -16,5 +19,37 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class InviteJoinUserDalImpl extends BaseAdminService<InviteJoinUserMapper, InviteJoinUserEntity> implements IInviteJoinUserDal {
+
+
+
+    /**
+     * 通过code查询参与人信息
+     *
+     * @param code
+     * @return
+     */
+    @Override
+    public List<InviteJoinUserEntity> queryJoinByCode(String code, Integer state) {
+        LambdaQueryWrapper<InviteJoinUserEntity> lqw = new LambdaQueryWrapper<>();
+        lqw.eq(InviteJoinUserEntity::getInviteCode,code);
+        if (state != null){
+            lqw.eq(InviteJoinUserEntity::getStatus,state);
+        }
+        return list(lqw);
+    }
+
+    /**
+     * 通过code + uid 查询一个是是否参与
+     *
+     * @param code
+     * @param uid
+     */
+    @Override
+    public InviteJoinUserEntity getInviteJoinUser(String code, Integer uid) {
+        LambdaQueryWrapper<InviteJoinUserEntity> lqw = new LambdaQueryWrapper<>();
+        lqw.eq(InviteJoinUserEntity::getInviteCode,code)
+                .eq(InviteJoinUserEntity::getJoinUid,uid);
+        return getOne(lqw);
+    }
 
 }

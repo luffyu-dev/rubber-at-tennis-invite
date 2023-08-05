@@ -1,8 +1,7 @@
 package com.rubber.at.tennis.invite.service.controller;
 
-import cn.hutool.core.util.StrUtil;
-import com.rubber.at.tennis.invite.api.InviteInfoApplyApi;
-import com.rubber.at.tennis.invite.api.dto.InviteInfoDto;
+import com.rubber.at.tennis.invite.api.ActivityInviteApplyApi;
+import com.rubber.at.tennis.invite.api.dto.ApplyInviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
 import com.rubber.base.components.util.annotation.NeedLogin;
@@ -19,21 +18,18 @@ import javax.annotation.Resource;
 @RequestMapping("/invite/apply")
 public class InviteApplyController {
 
+
+
     @Resource
-    private InviteInfoApplyApi inviteInfoApplyApi;
+    private ActivityInviteApplyApi activityInviteApplyApi;
 
     /**
      * 新增或者编辑一个邀请
      */
     @NeedLogin
     @PostMapping("/edit")
-    public ResultMsg editInvite(@RequestBody InviteInfoDto dto){
-        InviteCodeResponse response;
-        if (StrUtil.isEmpty(dto.getInviteCode())){
-            response = inviteInfoApplyApi.addInviteInfo(dto);
-        }else {
-            response = inviteInfoApplyApi.editInviteInfo(dto);
-        }
+    public ResultMsg editInvite(@RequestBody ApplyInviteInfoDto dto){
+        InviteCodeResponse response = activityInviteApplyApi.saveActivityInviteInfo(dto);
         return ResultMsg.success(response);
     }
 
@@ -44,7 +40,7 @@ public class InviteApplyController {
     @NeedLogin
     @PostMapping("/published")
     public ResultMsg published(@RequestBody InviteInfoCodeReq dto){
-        InviteCodeResponse response = inviteInfoApplyApi.published(dto);
+        InviteCodeResponse response = activityInviteApplyApi.publishInvite(dto);
         return ResultMsg.success(response);
     }
 
@@ -55,7 +51,7 @@ public class InviteApplyController {
     @NeedLogin
     @PostMapping("/close")
     public ResultMsg close(@RequestBody InviteInfoCodeReq dto){
-        InviteCodeResponse response = inviteInfoApplyApi.closeInvite(dto);
+        InviteCodeResponse response = activityInviteApplyApi.closeInvite(dto);
         return ResultMsg.success(response);
     }
 }

@@ -44,6 +44,20 @@ public class InviteJoinUserEntity extends BaseEntity {
     private Integer joinUid;
 
     /**
+     * 参与人id昵称
+     */
+    @TableField("Fjoin_user_nick")
+    private String joinUserNick;
+
+
+    /**
+     * 参与人头像
+     */
+    @TableField("Fjoin_user_avatar")
+    private String joinUserAvatar;
+
+
+    /**
      * 关联的数据版本
      */
     @TableField("Fdata_version")

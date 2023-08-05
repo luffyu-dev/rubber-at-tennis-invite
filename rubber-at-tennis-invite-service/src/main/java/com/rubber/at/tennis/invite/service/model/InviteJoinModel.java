@@ -1,7 +1,7 @@
 package com.rubber.at.tennis.invite.service.model;
 
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
-import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
+import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
 import lombok.Data;
 
 /**
@@ -19,16 +19,17 @@ public class InviteJoinModel {
     /**
      * 邀请人对象
      */
-    private InviteInfoEntity infoEntity;
-
+    private ActivityInviteInfoEntity activityInviteInfoEntity;
 
 
 
     public InviteJoinModel() {
     }
 
-    public InviteJoinModel(InviteInfoCodeReq req, InviteInfoEntity infoEntity) {
+
+
+    public InviteJoinModel(InviteInfoCodeReq req, ActivityInviteInfoEntity infoEntity) {
         this.req = req;
-        this.infoEntity = infoEntity;
+        this.activityInviteInfoEntity = infoEntity;
     }
 }

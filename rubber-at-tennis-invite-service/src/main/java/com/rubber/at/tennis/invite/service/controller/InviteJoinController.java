@@ -1,6 +1,6 @@
 package com.rubber.at.tennis.invite.service.controller;
 
-import com.rubber.at.tennis.invite.api.InviteInfoJoinApi;
+import com.rubber.at.tennis.invite.api.ActivityInviteApplyApi;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteJoinReq;
 import com.rubber.base.components.util.annotation.NeedLogin;
@@ -20,8 +20,9 @@ import javax.annotation.Resource;
 @RequestMapping("/invite/join")
 public class InviteJoinController {
 
+
     @Resource
-    private InviteInfoJoinApi inviteInfoJoinApi;
+    private ActivityInviteApplyApi activityInviteApplyApi;
 
     /**
      * 报名参与
@@ -29,7 +30,7 @@ public class InviteJoinController {
     @NeedLogin
     @PostMapping("/submit")
     public ResultMsg joinInvite(@RequestBody InviteInfoCodeReq dto){
-        inviteInfoJoinApi.join(dto);
+        activityInviteApplyApi.joinInvite(dto);
         return ResultMsg.success();
     }
 
@@ -39,7 +40,7 @@ public class InviteJoinController {
     @NeedLogin
     @PostMapping("/cancel")
     public ResultMsg cancelJoin(@RequestBody InviteJoinReq dto){
-        inviteInfoJoinApi.cancelJoin(dto);
+        activityInviteApplyApi.cancelJoinInvite(dto);
         return ResultMsg.success();
     }
 

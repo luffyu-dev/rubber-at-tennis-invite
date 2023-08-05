@@ -7,6 +7,7 @@ import lombok.Getter;
  * Created on 2022/9/1
  */
 @Getter
+@Deprecated
 public enum  InviteInfoStateEnums {
 
     /**

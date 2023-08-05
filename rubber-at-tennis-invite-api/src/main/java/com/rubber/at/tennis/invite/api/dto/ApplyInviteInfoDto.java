@@ -1,6 +1,7 @@
 package com.rubber.at.tennis.invite.api.dto;
 
 import com.alibaba.fastjson.JSONObject;
+import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,13 +18,9 @@ import java.util.Date;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class InviteInfoDto extends BaseUserSession {
+public class ApplyInviteInfoDto extends InviteInfoCodeReq {
 
 
-    /**
-     * 邀请code
-     */
-    private String inviteCode;
 
     /**
      * 邀请标题
@@ -44,11 +41,6 @@ public class InviteInfoDto extends BaseUserSession {
      * 邀请人数
      */
     private Integer inviteNumber;
-
-    /**
-     * 已报名人数
-     */
-    private Integer joinNumber;
 
 
     /**
@@ -114,79 +106,12 @@ public class InviteInfoDto extends BaseUserSession {
     private String remark;
 
 
-    /**
-     * 状态 10表示初始化 20表示已发布，30表示已完成
-     */
-    private Integer status;
-    private String statusDesc;
-
-    /**
-     * 是否参数
-     */
-    private Integer joinStatus;
-    private String joinStatusDesc;
-
-
-    /**
-     * 高级设置
-     * 1表示设置 0表示没有
-     */
-    private Integer majorSettings = 0;
-
-
-    /**
-     * 单打 / 双打
-     */
-    private String playType;
-
-
-    /**
-     * 球员水平要求
-     */
-    private String playerNtrp;
-
 
     /**
      * 是否自动发布
      * 0表示否 1表示是
      */
     private Integer autoPublished;
-
-
-    /**
-     * 免责声明
-     * 1表示开启 0表示没有
-     */
-    private Integer disclaimerFlag = 0;
-    private String disclaimerAdditional;
-
-
-    /**
-     * 人均费用
-     * 费用类型 和 人均费用
-     */
-    private Integer costType;
-    private Double peopleCost;
-
-
-    /**
-     * 消息通知开关
-     * 0表示没有，1表示打开
-     */
-    private Integer notifyFlag = 0;
-
-
-    /**
-     * 是否允许取消
-     * 0表示没有，1表示打开
-     */
-    private Integer allowCancel = 0;
-
-    /**
-     * 是否自动参加
-     * 0表示不自动参加 1表示自动参加
-     */
-    private Integer autoJoin ;
 
 
     /**

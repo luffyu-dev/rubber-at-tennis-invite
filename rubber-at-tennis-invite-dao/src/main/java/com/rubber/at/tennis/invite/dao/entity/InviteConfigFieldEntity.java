@@ -41,7 +41,7 @@ public class InviteConfigFieldEntity extends BaseEntity {
      * 发起人id
      */
     @TableField("Finvite_field")
-    private Integer inviteField;
+    private String inviteField;
 
     /**
      * 邀请标题

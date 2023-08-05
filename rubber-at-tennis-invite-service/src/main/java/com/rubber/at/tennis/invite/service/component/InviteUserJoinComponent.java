@@ -1,11 +1,12 @@
 package com.rubber.at.tennis.invite.service.component;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
-import com.rubber.at.tennis.invite.api.enums.InviteInfoStateEnums;
 import com.rubber.at.tennis.invite.api.enums.InviteJoinStateEnums;
-import com.rubber.at.tennis.invite.dao.dal.IInviteUserDal;
-import com.rubber.at.tennis.invite.dao.entity.InviteInfoEntity;
-import com.rubber.at.tennis.invite.dao.entity.InviteUserEntity;
+import com.rubber.at.tennis.invite.dao.dal.IActivityInviteInfoDal;
+import com.rubber.at.tennis.invite.dao.dal.IInviteJoinUserDal;
+import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
+import com.rubber.at.tennis.invite.dao.entity.InviteJoinUserEntity;
 import com.rubber.at.tennis.invite.service.common.exception.ErrorCodeEnums;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
 import com.rubber.at.tennis.invite.service.model.InviteJoinModel;
@@ -23,13 +24,14 @@ import java.util.Date;
  */
 @Slf4j
 @Component
-public class InviteJoinComponent {
+public class InviteUserJoinComponent {
 
     @Autowired
-    private IInviteUserDal iInviteUserDal;
+    private IInviteJoinUserDal iInviteJoinUserDal;
 
     @Autowired
-    private InviteApplyComponent inviteApplyComponent;
+    private IActivityInviteInfoDal iActivityInviteInfoDal;
+
 
     /**
      * 用户报名
@@ -41,16 +43,16 @@ public class InviteJoinComponent {
     public void joinInvite(InviteJoinModel joinModel){
         try {
             InviteInfoCodeReq req = joinModel.getReq();
-            InviteInfoEntity infoEntity = joinModel.getInfoEntity();
+            ActivityInviteInfoEntity infoEntity = joinModel.getActivityInviteInfoEntity();
             int oldJoinIndex = infoEntity.getJoinNumber();
 
-            InviteUserEntity userEntity = iInviteUserDal.getInviteJoinUser(req.getInviteCode(), req.getUid());
+            InviteJoinUserEntity userEntity = iInviteJoinUserDal.getInviteJoinUser(req.getInviteCode(), req.getUid());
             if (userEntity != null && InviteJoinStateEnums.SUCCESS.getState().equals(userEntity.getStatus())){
                 // 报名重入
                 return;
             }
             if (userEntity == null){
-                userEntity = new InviteUserEntity();
+                userEntity = new InviteJoinUserEntity();
             }
             Date now = new Date();
             userEntity.setJoinUid(req.getUid());
@@ -59,9 +61,9 @@ public class InviteJoinComponent {
             userEntity.setCreateTime(now);
             userEntity.setUpdateTime(now);
             userEntity.setStatus(InviteJoinStateEnums.SUCCESS.getState());
-            if (inviteApplyComponent.updateInviteForJoin(infoEntity, oldJoinIndex, userEntity.getDataVersion())
-                    && iInviteUserDal.saveOrUpdate(userEntity)) {
-                return;
+            if (this.updateInviteForJoin(infoEntity, oldJoinIndex, userEntity.getDataVersion())
+                    && iInviteJoinUserDal.saveOrUpdate(userEntity)) {
+                return ;
             }
             throw new RubberServiceException(SysCode.SYSTEM_BUS);
         }catch (Exception e){
@@ -69,16 +71,15 @@ public class InviteJoinComponent {
         }
     }
 
-
     /**
      * 取消报名
      */
     @Transactional(
             rollbackFor = Exception.class
     )
-    public void cancelJoinInvite(Integer uid,InviteInfoEntity inviteInfoEntity){
+    public void cancelJoinInvite(Integer uid,ActivityInviteInfoEntity inviteInfoEntity){
         // 建议用户是否有参与
-        InviteUserEntity joinUser = iInviteUserDal.getInviteJoinUser(inviteInfoEntity.getInviteCode(), uid);
+        InviteJoinUserEntity joinUser = iInviteJoinUserDal.getInviteJoinUser(inviteInfoEntity.getInviteCode(), uid);
         if (joinUser == null){
             throw new RubberServiceException(ErrorCodeEnums.USER_NOT_JOINED);
         }
@@ -90,10 +91,24 @@ public class InviteJoinComponent {
         joinUser.setStatus(InviteJoinStateEnums.CLOSE.getState());
         joinUser.setDataVersion(joinUser.getJoinUid());
         int oldJoinNumber = inviteInfoEntity.getJoinNumber();
-        if (inviteApplyComponent.updateInviteForJoin(inviteInfoEntity, oldJoinNumber, Math.max(oldJoinNumber-1,0))
-                && iInviteUserDal.updateById(joinUser)) {
+        if (this.updateInviteForJoin(inviteInfoEntity, oldJoinNumber, Math.max(oldJoinNumber-1,0))
+                && iInviteJoinUserDal.updateById(joinUser)) {
             return;
         }
         throw new RubberServiceException(SysCode.SYSTEM_BUS);
+    }
+
+
+
+
+    private boolean updateInviteForJoin(ActivityInviteInfoEntity inviteInfoEntity,Integer oldJoinIndex,Integer newJoinIndex){
+        Date now = new Date();
+        inviteInfoEntity.setUpdateTime(now);
+        inviteInfoEntity.setJoinNumber(newJoinIndex);
+        LambdaQueryWrapper<ActivityInviteInfoEntity> lqw = new LambdaQueryWrapper<>();
+        lqw.eq(ActivityInviteInfoEntity::getId,inviteInfoEntity.getId())
+                .eq(ActivityInviteInfoEntity::getJoinNumber,oldJoinIndex)
+                .ge(ActivityInviteInfoEntity::getInviteNumber,newJoinIndex);
+        return iActivityInviteInfoDal.update(inviteInfoEntity,lqw);
     }
 }

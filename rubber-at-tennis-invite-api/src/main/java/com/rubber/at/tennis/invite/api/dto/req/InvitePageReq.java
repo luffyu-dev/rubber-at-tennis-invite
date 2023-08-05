@@ -1,5 +1,6 @@
 package com.rubber.at.tennis.invite.api.dto.req;
 
+import com.rubber.base.components.util.session.BaseLbsUserSession;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,7 +11,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class InvitePageReq extends BaseUserSession {
+public class InvitePageReq extends BaseLbsUserSession {
 
     private int page = 1;
     private int size = 20;

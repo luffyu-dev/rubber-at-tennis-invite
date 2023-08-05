@@ -1,6 +1,6 @@
 package com.rubber.at.tennis.invite.api;
 
-import com.rubber.at.tennis.invite.api.dto.InviteInfoDto;
+import com.rubber.at.tennis.invite.api.dto.ApplyInviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
 
@@ -14,12 +14,12 @@ public interface ActivityInviteApplyApi {
     /**
      * 保存活动邀约信息
      */
-    InviteCodeResponse saveActivityInviteInfo(InviteInfoDto inviteInfoDto);
+    InviteCodeResponse saveActivityInviteInfo(ApplyInviteInfoDto inviteInfoDto);
 
 
 
     /**
-     * 发布动
+     * 发布活动
      */
     InviteCodeResponse publishInvite(InviteInfoCodeReq req);
 
