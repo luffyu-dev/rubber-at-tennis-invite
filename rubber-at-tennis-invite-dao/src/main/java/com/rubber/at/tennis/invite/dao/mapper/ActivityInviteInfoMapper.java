@@ -1,7 +1,12 @@
 package com.rubber.at.tennis.invite.dao.mapper;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rubber.at.tennis.invite.dao.condition.InviteInfoCondition;
 import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +18,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface ActivityInviteInfoMapper extends BaseMapper<ActivityInviteInfoEntity> {
 
+
+    /**
+     * 按照条件查询
+     * @param condition
+     */
+    void queryPageByJoin(Page<ActivityInviteInfoEntity> page, @Param("condition") InviteInfoCondition condition);
 }
