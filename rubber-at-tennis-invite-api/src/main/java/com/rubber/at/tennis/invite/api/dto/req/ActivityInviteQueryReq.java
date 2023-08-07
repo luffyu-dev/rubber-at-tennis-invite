@@ -57,4 +57,7 @@ public class ActivityInviteQueryReq extends InviteInfoCodeReq{
 
 
     private String searchTime;
+
+
+    private String searchValue;
 }

@@ -117,9 +117,9 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
      * @param req
      */
     @Override
-    public ResultPage<ActivityInviteInfoDto> queryJoinPage(ActivityInviteQueryReq req) {
+    public ResultPage<ActivityInviteInfoDto> queryUserJoinPage(ActivityInviteQueryReq req) {
         // TODO: 2023/8/7 需要修改
-        IPage<ActivityInviteInfoEntity> page = activityInviteQueryComponent.queryJoinPageInvite(req,false);
+        IPage<ActivityInviteInfoEntity> page = activityInviteQueryComponent.queryJoinPageInvite(req);
         ResultPage<ActivityInviteInfoDto> dtoResultPage = new ResultPage<>();
         dtoResultPage.setCurrent(page.getCurrent());
         dtoResultPage.setPages(page.getPages());
@@ -221,19 +221,23 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
     private void handlerInviteTimeDesc(ActivityInviteInfoDto activityInviteInfoDto){
         if (activityInviteInfoDto.getStartTime() != null && activityInviteInfoDto.getEndTime() != null ){
 
-            String beginTime = DateUtil.format(activityInviteInfoDto.getStartTime(),"MM-YY hh:mm");
-            String endTime = DateUtil.format(activityInviteInfoDto.getEndTime(),"hh:mm");
+            Date now = new Date();
+
+            String beginTime = DateUtil.format(activityInviteInfoDto.getStartTime(),"MM/dd HH:mm");
+            String endTime;
             // 相差的天数
             long l = DateUtil.betweenDay(activityInviteInfoDto.getStartTime(), activityInviteInfoDto.getEndTime(),true);
-            String timeDesc = beginTime + "-"+ endTime;
-            if (l > 0){
-                timeDesc += "[+"+ l +"]";
+            if (l != 0){
+                endTime = DateUtil.format(activityInviteInfoDto.getEndTime(),"MM/dd HH:mm");
+            }else {
+                endTime = DateUtil.format(activityInviteInfoDto.getEndTime(),"HH:mm");
             }
+            String timeDesc = beginTime + "-"+ endTime;
             activityInviteInfoDto.setInviteTimeDesc(timeDesc);
 
             String inviteTimeWeekDesc = "";
             // 当前日期的天数
-            long x = DateUtil.betweenDay(new Date(), activityInviteInfoDto.getStartTime(),true);
+            long x = DateUtil.betweenDay(now, activityInviteInfoDto.getStartTime(),true);
             if (x  >= 0 ){
                 switch ((int) x){
                     case 0:
@@ -274,6 +278,18 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
 
                 }
             }
+            int hour = DateUtil.hour(activityInviteInfoDto.getStartTime(), true);
+            if (hour < 9){
+                inviteTimeWeekDesc += "·早上";
+            }else if (hour < 11){
+                inviteTimeWeekDesc += "·上午";
+            }else if (hour < 13){
+                inviteTimeWeekDesc += "·中午";
+            }else if (hour < 18){
+                inviteTimeWeekDesc += "·下午";
+            }else {
+                inviteTimeWeekDesc += "·晚上";
+            }
             activityInviteInfoDto.setInviteTimeWeekDesc(inviteTimeWeekDesc);
         }
     }
@@ -283,10 +299,10 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
      */
     private void handlerLbs(ActivityInviteInfoDto activityInviteInfoDto,BaseLbsUserSession userLbs){
         if (StrUtil.isEmpty(userLbs.getLatitude()) || StrUtil.isEmpty(userLbs.getLongitude()) ||
-                StrUtil.isEmpty(activityInviteInfoDto.getLatitude()) || StrUtil.isEmpty(activityInviteInfoDto.getLongitude())){
+                StrUtil.isEmpty(activityInviteInfoDto.getCourtLatitude()) || StrUtil.isEmpty(activityInviteInfoDto.getCourtLongitude())){
             return;
         }
-        double meter1 = LbsUtils.getDistance(userLbs.getLatitude(),userLbs.getLongitude(),activityInviteInfoDto.getLatitude(),activityInviteInfoDto.getLongitude());
+        double meter1 = LbsUtils.getDistance(userLbs.getLatitude(),userLbs.getLongitude(),activityInviteInfoDto.getCourtLatitude(),activityInviteInfoDto.getCourtLongitude());
         activityInviteInfoDto.setLbsDistance((int)meter1);
     }
 }

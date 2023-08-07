@@ -1,6 +1,9 @@
 package com.rubber.at.tennis.invite.dao.dal.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rubber.at.tennis.invite.dao.condition.InviteInfoCondition;
 import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
 import com.rubber.at.tennis.invite.dao.mapper.ActivityInviteInfoMapper;
 import com.rubber.at.tennis.invite.dao.dal.IActivityInviteInfoDal;
@@ -39,5 +42,15 @@ public class ActivityInviteInfoDalImpl extends BaseAdminService<ActivityInviteIn
         lwq.eq(ActivityInviteInfoEntity::getInviteCode,code)
                 .eq(ActivityInviteInfoEntity::getUid,managerUid);
         return getOne(lwq,true);
+    }
+
+    /**
+     * @param page
+     * @param condition
+     * @return
+     */
+    @Override
+    public IPage<ActivityInviteInfoEntity> pageJoinInvite(IPage<ActivityInviteInfoEntity> page, InviteInfoCondition condition) {
+        return getBaseMapper().queryPageByJoin(page,condition);
     }
 }

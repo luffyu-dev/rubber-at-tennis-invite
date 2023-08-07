@@ -48,7 +48,7 @@
             and  a.Fcreate_time > #{condition.createTimeLine}
         </if>
         GROUP BY a.Finvite_code
-        order by b.Fupdate_time desc
+
     </select>
 
 

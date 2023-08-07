@@ -173,6 +173,11 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
             log.error("邀请人数量至少有1人");
             throw new RubberServiceException(SysCode.PARAM_ERROR);
         }
+        if (dto.getStartTime() == null || dto.getEndTime() == null || DateUtil.compare(dto.getStartTime(),dto.getEndTime()) > 0){
+            log.error("请设置正常的开始结束时间");
+            throw new RubberServiceException(SysCode.PARAM_ERROR);
+        }
+
     }
 
 

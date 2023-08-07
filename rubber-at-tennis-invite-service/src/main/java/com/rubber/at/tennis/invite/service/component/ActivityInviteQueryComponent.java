@@ -11,6 +11,7 @@ import com.rubber.at.tennis.invite.api.dto.InviteJoinUserDto;
 import com.rubber.at.tennis.invite.api.dto.req.ActivityInviteQueryReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.enums.InviteJoinStateEnums;
+import com.rubber.at.tennis.invite.dao.condition.InviteInfoCondition;
 import com.rubber.at.tennis.invite.dao.dal.IActivityInviteInfoDal;
 import com.rubber.at.tennis.invite.dao.dal.IInviteConfigFieldDal;
 import com.rubber.at.tennis.invite.dao.dal.IInviteJoinUserDal;
@@ -132,29 +133,15 @@ public class ActivityInviteQueryComponent {
     /**
      * 查询参与的活动
      */
-    public IPage<ActivityInviteInfoEntity> queryJoinPageInvite(ActivityInviteQueryReq req,boolean isUser){
+    public IPage<ActivityInviteInfoEntity> queryJoinPageInvite(ActivityInviteQueryReq req){
         IPage<ActivityInviteInfoEntity> page = new Page<>();
         page.setCurrent(req.getPage());
         page.setSize(req.getSize());
 
-        LambdaQueryWrapper<ActivityInviteInfoEntity> lqw = new LambdaQueryWrapper<>();
-        if (StrUtil.isNotEmpty(req.getCourtCity() )){
-            lqw.eq(ActivityInviteInfoEntity::getCourtCity,req.getCourtCity());
-        }
-        if (StrUtil.isNotEmpty(req.getCourtProvince() )){
-            lqw.eq(ActivityInviteInfoEntity::getCourtProvince,req.getCourtProvince());
-        }
-        if (StrUtil.isNotEmpty(req.getCourtDistrict() )){
-            lqw.eq(ActivityInviteInfoEntity::getCourtDistrict,req.getCourtDistrict());
-        }
-        if (req.getStatus() != null){
-            lqw.eq(ActivityInviteInfoEntity::getStatus,req.getStatus());
-        }
-        if (isUser){
-            lqw.eq(ActivityInviteInfoEntity::getUid,req.getUid());
-        }
-        lqw.orderByAsc(ActivityInviteInfoEntity::getStartTime);
-        return iActivityInviteInfoDal.page(page, lqw);
+        InviteInfoCondition condition = new InviteInfoCondition();
+        condition.setJoinUid(req.getUid());
+        condition.setSearchValue(req.getSearchValue());
+        return iActivityInviteInfoDal.pageJoinInvite(page, condition);
     }
 
 

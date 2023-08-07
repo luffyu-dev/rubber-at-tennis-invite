@@ -39,7 +39,7 @@ public interface ActivityInviteQueryApi {
     /**
      * 查询加入的活动
      */
-    ResultPage<ActivityInviteInfoDto> queryJoinPage(ActivityInviteQueryReq req);
+    ResultPage<ActivityInviteInfoDto> queryUserJoinPage(ActivityInviteQueryReq req);
 
 
     /**

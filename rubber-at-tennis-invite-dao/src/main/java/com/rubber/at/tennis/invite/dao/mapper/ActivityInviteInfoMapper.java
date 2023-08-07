@@ -1,5 +1,6 @@
 package com.rubber.at.tennis.invite.dao.mapper;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rubber.at.tennis.invite.dao.condition.InviteInfoCondition;
 import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
@@ -23,5 +24,5 @@ public interface ActivityInviteInfoMapper extends BaseMapper<ActivityInviteInfoE
      * 按照条件查询
      * @param condition
      */
-    void queryPageByJoin(Page<ActivityInviteInfoEntity> page, @Param("condition") InviteInfoCondition condition);
+    IPage<ActivityInviteInfoEntity> queryPageByJoin(IPage<ActivityInviteInfoEntity> page, @Param("condition") InviteInfoCondition condition);
 }
