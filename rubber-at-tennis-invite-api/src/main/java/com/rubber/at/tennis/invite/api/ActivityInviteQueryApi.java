@@ -5,6 +5,7 @@ import com.rubber.at.tennis.invite.api.dto.ActivityInviteDetailDto;
 import com.rubber.at.tennis.invite.api.dto.ActivityInviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.ApplyInviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.InviteJoinUserDto;
+import com.rubber.at.tennis.invite.api.dto.req.ActivityInviteQueryReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.base.components.util.result.page.ResultPage;
 import com.rubber.base.components.util.session.BaseLbsUserSession;
@@ -32,18 +33,18 @@ public interface ActivityInviteQueryApi {
     /**
      * 查询推荐的活动信息
      */
-    ResultPage<ActivityInviteInfoDto> queryRecommendPage();
+    ResultPage<ActivityInviteInfoDto> queryRecommendPage(ActivityInviteQueryReq req);
 
 
     /**
      * 查询加入的活动
      */
-    ResultPage<ActivityInviteInfoDto> queryJoinPage(BaseLbsUserSession session);
+    ResultPage<ActivityInviteInfoDto> queryJoinPage(ActivityInviteQueryReq req);
 
 
     /**
      * 查询用户自己的创建的活动
      */
-    ResultPage<ActivityInviteInfoDto> queryUserInvite(BaseLbsUserSession session);
+    ResultPage<ActivityInviteInfoDto> queryUserInvite(ActivityInviteQueryReq req);
 
 }

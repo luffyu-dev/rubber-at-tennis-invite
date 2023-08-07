@@ -37,14 +37,14 @@ public class ActivityInviteInfoDto extends InviteInfoCodeReq {
     private String inviteImg;
 
     /**
-     * 邀请人数
+     * 总邀请人数
      */
     private Integer inviteNumber;
 
     /**
      * 已参与的人数
      */
-    private String joinNumber;
+    private Integer joinNumber;
 
     /**
      * 开始时间
@@ -108,6 +108,15 @@ public class ActivityInviteInfoDto extends InviteInfoCodeReq {
     private String remark;
 
 
+    /**
+     * 状态 10表示待发布 20表示已发布，30表示取消
+     */
+    private Integer status;
+
+    /**
+     * 参与状态 10表示报名中 20表示名额已满 30表示报名截止 40活动结束
+     */
+    private Integer joinStatus;
 
     /**
      * 邀约状态描述
@@ -125,5 +134,12 @@ public class ActivityInviteInfoDto extends InviteInfoCodeReq {
      * 邀请的天时间猫叔
      */
     private String inviteTimeWeekDesc;
+
+
+    /**
+     * lbs的定位距离
+     * 单位是米
+     */
+    private Integer lbsDistance = 0;
 
 }

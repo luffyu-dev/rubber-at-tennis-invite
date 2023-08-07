@@ -16,7 +16,7 @@ import java.util.List;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ActivityInviteDetailDto extends ApplyInviteInfoDto {
+public class ActivityInviteDetailDto extends ActivityInviteInfoDto {
 
 
     /**

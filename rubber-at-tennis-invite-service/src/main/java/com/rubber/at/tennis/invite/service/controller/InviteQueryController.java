@@ -3,6 +3,7 @@ package com.rubber.at.tennis.invite.service.controller;
 import com.rubber.at.tennis.invite.api.ActivityInviteQueryApi;
 import com.rubber.at.tennis.invite.api.dto.ActivityInviteDetailDto;
 import com.rubber.at.tennis.invite.api.dto.ActivityInviteInfoDto;
+import com.rubber.at.tennis.invite.api.dto.req.ActivityInviteQueryReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.req.InvitePageReq;
 import com.rubber.base.components.util.annotation.NeedLogin;
@@ -43,7 +44,7 @@ public class InviteQueryController {
      */
     @NeedLogin
     @PostMapping("/user-list")
-    public ResultMsg listPage(@RequestBody InvitePageReq req){
+    public ResultMsg listPage(@RequestBody ActivityInviteQueryReq req){
         ResultPage<ActivityInviteInfoDto> inviteInfo = activityInviteQueryApi.queryUserInvite(req);
         return ResultMsg.success(inviteInfo);
     }
