@@ -23,6 +23,7 @@ public class ActivityInviteQueryReq extends InviteInfoCodeReq{
      * 分页
      */
     private int size = 20;
+
     /**
      * 状态
      */
@@ -32,23 +33,6 @@ public class ActivityInviteQueryReq extends InviteInfoCodeReq{
      * 关联的球场code
      */
     private String courtCode;
-
-    /**
-     * 场地所在省
-     */
-    private String courtProvince;
-
-
-    /**
-     * 球场所在市
-     */
-    private String courtCity;
-
-    /**
-     * 球场所在区
-     */
-    private String courtDistrict;
-
 
     /**
      * 排序字段

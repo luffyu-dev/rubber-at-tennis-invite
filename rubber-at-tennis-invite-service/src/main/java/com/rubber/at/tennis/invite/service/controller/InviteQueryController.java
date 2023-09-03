@@ -7,6 +7,7 @@ import com.rubber.at.tennis.invite.api.dto.InviteJoinUserDto;
 import com.rubber.at.tennis.invite.api.dto.req.ActivityInviteQueryReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.req.InvitePageReq;
+import com.rubber.at.tennis.invite.api.dto.req.InviteTemplateQueryReq;
 import com.rubber.base.components.util.annotation.NeedLogin;
 import com.rubber.base.components.util.result.ResultMsg;
 import com.rubber.base.components.util.result.page.ResultPage;
@@ -87,6 +88,29 @@ public class InviteQueryController {
     @PostMapping("/recommend")
     public ResultMsg recommend(@RequestBody ActivityInviteQueryReq req){
         ResultPage<ActivityInviteInfoDto> inviteInfo = activityInviteQueryApi.queryRecommendPage(req);
+        return ResultMsg.success(inviteInfo);
+    }
+
+
+
+
+    /**
+     * 查询推荐的活动列表
+     * @param req 当前的邀请参数
+     * @return 返回是否支持邀请
+     */
+    @PostMapping("/office-template")
+    public ResultMsg queryOfficialTemplate(@RequestBody ActivityInviteQueryReq req){
+        ResultPage<ActivityInviteInfoDto> inviteInfo = activityInviteQueryApi.queryOfficialTemplate(req);
+        return ResultMsg.success(inviteInfo);
+    }
+
+
+
+    @PostMapping("/user-template")
+    @NeedLogin(request = false)
+    public ResultMsg queryUserInviteTemplate(@RequestBody InviteTemplateQueryReq req){
+        ResultPage<ActivityInviteInfoDto> inviteInfo = activityInviteQueryApi.queryUserInviteTemplate(req);
         return ResultMsg.success(inviteInfo);
     }
 

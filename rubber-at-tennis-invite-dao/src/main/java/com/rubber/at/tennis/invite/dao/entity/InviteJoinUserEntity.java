@@ -58,6 +58,13 @@ public class InviteJoinUserEntity extends BaseEntity {
 
 
     /**
+     * 0表示男 1表示女 2表示未知
+     */
+    @TableField("Fjoin_user_sex")
+    private Integer joinUserSex;
+
+
+    /**
      * 关联的数据版本
      */
     @TableField("Fdata_version")

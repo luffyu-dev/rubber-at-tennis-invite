@@ -182,5 +182,12 @@ public class ActivityInviteInfoEntity extends BaseEntity {
     @TableField("Fupdate_time")
     private Date updateTime;
 
+    /**
+     * 模版类型
+     * 0表示不是模版 999表示官方模版 1表示自己的模版
+     */
+    @TableField("Ftemplate_type")
+    private Integer templateType;
+
 
 }

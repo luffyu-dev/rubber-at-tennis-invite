@@ -25,6 +25,11 @@ public class ActivityInviteDetailDto extends ActivityInviteInfoDto {
     private List<InviteJoinUserDto> joinedUserList;
 
 
+    /**
+     * 管理员信息
+     */
+    private InviteSponsorUserDto sponsorInfo;
+
 
     /**
      * 配置字段

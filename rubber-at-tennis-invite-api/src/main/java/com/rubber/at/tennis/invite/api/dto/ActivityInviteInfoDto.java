@@ -1,6 +1,7 @@
 package com.rubber.at.tennis.invite.api.dto;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -49,11 +50,13 @@ public class ActivityInviteInfoDto extends InviteInfoCodeReq {
     /**
      * 开始时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
     private Date startTime;
 
     /**
      * 结束时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
     private Date endTime;
 
     /**
@@ -65,6 +68,11 @@ public class ActivityInviteInfoDto extends InviteInfoCodeReq {
      * 截止时间
      */
     private Date joinDeadline;
+
+    /**
+     * 截止时间
+     */
+    private String joinDeadlineDesc;
 
 
     /**
@@ -138,8 +146,10 @@ public class ActivityInviteInfoDto extends InviteInfoCodeReq {
 
     /**
      * lbs的定位距离
-     * 单位是米
+     * 单位是km
      */
-    private Integer lbsDistance = 0;
+    private double lbsDistance = 0;
+
+
 
 }

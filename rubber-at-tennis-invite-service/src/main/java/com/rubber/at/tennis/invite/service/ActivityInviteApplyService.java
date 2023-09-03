@@ -9,7 +9,9 @@ import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
 import com.rubber.at.tennis.invite.api.enums.ActivityInviteStateEnums;
 import com.rubber.at.tennis.invite.api.enums.RecordTypeEnums;
+import com.rubber.at.tennis.invite.dao.dal.IInviteUserBasicInfoDal;
 import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
+import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
 import com.rubber.at.tennis.invite.service.common.exception.ErrorCodeEnums;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
 import com.rubber.at.tennis.invite.service.component.ActivityInviteApplyComponent;
@@ -44,6 +46,9 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
 
     @Autowired
     private InviteUserJoinComponent inviteUserJoinComponent;
+
+    @Autowired
+    private IInviteUserBasicInfoDal iInviteUserBasicInfoDal;
 
     @Autowired
     private UserTennisApi userTennisApi;
@@ -113,8 +118,14 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
             ActivityInviteInfoEntity infoEntity = inviteQueryComponent.getByCode(req);
             // 校验是否已经完成
             this.doCheckInviteInfo(infoEntity);
+            // 参与的用户信息
+            UserBasicInfoEntity joinUserInfo = iInviteUserBasicInfoDal.getByUid(req.getUid());
+            if (joinUserInfo == null){
+                // 用户未登录
+                throw new RubberServiceException(SysCode.LOGIN_EXPIRED);
+            }
             // 数据邀请对象
-            InviteJoinModel joinModel = new InviteJoinModel(req,infoEntity);
+            InviteJoinModel joinModel = new InviteJoinModel(req,infoEntity,joinUserInfo);
             inviteUserJoinComponent.joinInvite(joinModel);
 
             // 对接写入操作日期
@@ -209,6 +220,13 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
         Date now = new Date();
         if (infoEntity.getJoinDeadline() != null && now.getTime() > infoEntity.getJoinDeadline().getTime()){
             throw new RubberServiceException(ErrorCodeEnums.INVITE_TIME_JOIN_DEADLINE);
+        }
+
+        if (infoEntity.getStartTime() != null && now.getTime() > infoEntity.getStartTime().getTime()){
+            throw new RubberServiceException(ErrorCodeEnums.INVITE_TIME_JOIN_DEADLINE);
+        }
+        if (infoEntity.getEndTime() != null && now.getTime() > infoEntity.getEndTime().getTime()){
+            throw new RubberServiceException(ErrorCodeEnums.INVITE_FINISHED);
         }
 
     }

@@ -2,6 +2,7 @@ package com.rubber.at.tennis.invite.service.component;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -19,6 +20,7 @@ import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.InviteConfigFieldEntity;
 import com.rubber.at.tennis.invite.dao.entity.InviteJoinUserEntity;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
+import com.rubber.at.tennis.invite.service.util.MyDataUtil;
 import com.rubber.base.components.util.result.code.SysCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -94,6 +96,7 @@ public class ActivityInviteQueryComponent {
         return inviteJoinUserEntities.stream().map(i->{
             InviteJoinUserDto dto = new InviteJoinUserDto();
             BeanUtil.copyProperties(i,dto);
+            dto.setJoinTimeDesc(DateUtil.format(i.getUpdateTime(),"MM/dd HH:mm"));
             return dto;
         }).collect(Collectors.toList());
     }
@@ -108,14 +111,14 @@ public class ActivityInviteQueryComponent {
         page.setSize(req.getSize());
 
         LambdaQueryWrapper<ActivityInviteInfoEntity> lqw = new LambdaQueryWrapper<>();
-        if (StrUtil.isNotEmpty(req.getCourtCity() )){
-            lqw.eq(ActivityInviteInfoEntity::getCourtCity,req.getCourtCity());
+        if (StrUtil.isNotEmpty(req.getCity() )){
+            lqw.eq(ActivityInviteInfoEntity::getCourtCity,req.getCity());
         }
-        if (StrUtil.isNotEmpty(req.getCourtProvince() )){
-            lqw.eq(ActivityInviteInfoEntity::getCourtProvince,req.getCourtProvince());
+        if (StrUtil.isNotEmpty(req.getProvince() )){
+            lqw.eq(ActivityInviteInfoEntity::getCourtProvince,req.getProvince());
         }
-        if (StrUtil.isNotEmpty(req.getCourtDistrict() )){
-            lqw.eq(ActivityInviteInfoEntity::getCourtDistrict,req.getCourtDistrict());
+        if (StrUtil.isNotEmpty(req.getDistrict() )){
+            lqw.eq(ActivityInviteInfoEntity::getCourtDistrict,req.getDistrict());
         }
         if (req.getStatus() != null){
             lqw.eq(ActivityInviteInfoEntity::getStatus,req.getStatus());
@@ -123,10 +126,25 @@ public class ActivityInviteQueryComponent {
         if (isUser){
             lqw.eq(ActivityInviteInfoEntity::getUid,req.getUid());
         }
-        lqw.orderByAsc(ActivityInviteInfoEntity::getStartTime);
+        lqw.orderByDesc(ActivityInviteInfoEntity::getUpdateTime);
        return iActivityInviteInfoDal.page(page, lqw);
     }
 
+
+
+    /**
+     * 查询用户创建的邀约活动
+     */
+    public IPage<ActivityInviteInfoEntity> queryOfficeTemplateInvite(ActivityInviteQueryReq req){
+        IPage<ActivityInviteInfoEntity> page = new Page<>();
+        page.setCurrent(req.getPage());
+        page.setSize(req.getSize());
+
+        LambdaQueryWrapper<ActivityInviteInfoEntity> lqw = new LambdaQueryWrapper<>();
+        lqw.eq(ActivityInviteInfoEntity::getTemplateType,999);
+        lqw.orderByDesc(ActivityInviteInfoEntity::getUpdateTime);
+        return iActivityInviteInfoDal.page(page, lqw);
+    }
 
 
 

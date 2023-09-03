@@ -50,5 +50,11 @@ public class InviteJoinUserDto  {
     private Date createTime;
 
 
+    /**
+     * 参与日期
+     */
+    private String joinTimeDesc;
+
+
 
 }

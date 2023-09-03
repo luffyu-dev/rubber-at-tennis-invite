@@ -1,5 +1,6 @@
 package com.rubber.at.tennis.invite.dao.dal.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rubber.at.tennis.invite.dao.entity.InviteConfigFieldEntity;
 import com.rubber.at.tennis.invite.dao.mapper.InviteConfigFieldMapper;
@@ -39,7 +40,7 @@ public class InviteConfigFieldDalImpl extends BaseAdminService<InviteConfigField
         if(count(lqw) > 0 && !this.remove(lqw)){
             throw new BaseResultRunTimeException(SysCode.SYSTEM_BUS);
         }
-        if(!this.saveBatch(inviteConfigFieldEntityList)){
+        if(CollUtil.isNotEmpty(inviteConfigFieldEntityList) &&  !this.saveBatch(inviteConfigFieldEntityList)){
             throw new BaseResultRunTimeException(SysCode.SYSTEM_BUS);
         }
     }

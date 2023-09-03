@@ -2,30 +2,33 @@ package com.rubber.at.tennis.invite.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.db.PageResult;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.rubber.at.tennis.invite.api.ActivityInviteQueryApi;
 import com.rubber.at.tennis.invite.api.dto.*;
 import com.rubber.at.tennis.invite.api.dto.req.ActivityInviteQueryReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
+import com.rubber.at.tennis.invite.api.dto.req.InviteTemplateQueryReq;
 import com.rubber.at.tennis.invite.api.enums.ActivityInviteJoinStateEnums;
 import com.rubber.at.tennis.invite.api.enums.ActivityInviteStateEnums;
-import com.rubber.at.tennis.invite.api.enums.InviteJoinStateEnums;
+import com.rubber.at.tennis.invite.dao.dal.IInviteUserBasicInfoDal;
 import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
+import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
 import com.rubber.at.tennis.invite.service.component.ActivityInviteQueryComponent;
 import com.rubber.base.components.util.LbsUtils;
+import com.rubber.base.components.util.annotation.NeedLogin;
 import com.rubber.base.components.util.result.page.ResultPage;
 import com.rubber.base.components.util.session.BaseLbsUserSession;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +41,8 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
     @Autowired
     private ActivityInviteQueryComponent activityInviteQueryComponent;
 
+    @Autowired
+    private IInviteUserBasicInfoDal iInviteUserBasicInfoDal;
 
 
 
@@ -59,6 +64,8 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
         BeanUtil.copyProperties(activityInviteInfoEntity,detailDto);
         detailDto.setConfigField(inviteConfigField);
         detailDto.setJoinedUserList(joinUserDtos);
+        // 处理用户基本信息
+        handlerUserInfo(detailDto);
         // 处理状态
         handlerDesc(detailDto);
         // 计算地理位置
@@ -86,29 +93,13 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
      */
     @Override
     public ResultPage<ActivityInviteInfoDto> queryRecommendPage(ActivityInviteQueryReq req) {
+        if (StrUtil.isEmpty(req.getCity())){
+            req.setProvince("广东省");
+            req.setCity("深圳市");
+        }
         req.setStatus(ActivityInviteStateEnums.PUBLISHED.getState());
         IPage<ActivityInviteInfoEntity> page = activityInviteQueryComponent.queryPageInvite(req,false);
-        ResultPage<ActivityInviteInfoDto> dtoResultPage = new ResultPage<>();
-        dtoResultPage.setCurrent(page.getCurrent());
-        dtoResultPage.setPages(page.getPages());
-        dtoResultPage.setSize(page.getSize());
-        dtoResultPage.setTotal(page.getTotal());
-        if (CollUtil.isNotEmpty(page.getRecords())){
-            dtoResultPage.setRecords(
-                    page.getRecords().stream().map(i->{
-                        ActivityInviteInfoDto dto = new ActivityInviteInfoDto();
-                        BeanUtil.copyProperties(i,dto);
-                        // 处理状态
-                        handlerDesc(dto);
-                        // 计算地理位置
-                        handlerLbs(dto,req);
-                        // 计算时间
-                        handlerInviteTimeDesc(dto);
-                        return dto;
-                    }).collect(Collectors.toList())
-            );
-        }
-        return dtoResultPage;
+        return convertPageDto(page,req);
     }
 
     /**
@@ -120,6 +111,56 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
     public ResultPage<ActivityInviteInfoDto> queryUserJoinPage(ActivityInviteQueryReq req) {
         // TODO: 2023/8/7 需要修改
         IPage<ActivityInviteInfoEntity> page = activityInviteQueryComponent.queryJoinPageInvite(req);
+        return convertPageDto(page,req);
+    }
+
+    /**
+     * 查询用户自己的创建的活动
+     *
+     * @param req
+     */
+    @Override
+    public ResultPage<ActivityInviteInfoDto> queryUserInvite(ActivityInviteQueryReq req) {
+        IPage<ActivityInviteInfoEntity> page = activityInviteQueryComponent.queryPageInvite(req,true);
+        return convertPageDto(page,req);
+    }
+
+    /**
+     * 查询用户的模版
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public ResultPage<ActivityInviteInfoDto> queryUserInviteTemplate(InviteTemplateQueryReq req) {
+        if (req.getUid() == null){
+            return new ResultPage<>();
+        }
+        IPage<ActivityInviteInfoEntity> page;
+        if (req.getUserTemplate() == 1){
+            page = activityInviteQueryComponent.queryJoinPageInvite(req);
+        }else {
+            page = activityInviteQueryComponent.queryPageInvite(req,true);
+        }
+        return convertPageDto(page,req);
+    }
+
+    /**
+     * 查询官方的模版
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public ResultPage<ActivityInviteInfoDto> queryOfficialTemplate(ActivityInviteQueryReq req) {
+        req.setPage(1);
+        req.setSize(3);
+        IPage<ActivityInviteInfoEntity> page = activityInviteQueryComponent.queryOfficeTemplateInvite(req);
+        return convertPageDto(page,req);
+    }
+
+
+    private  ResultPage<ActivityInviteInfoDto> convertPageDto(IPage<ActivityInviteInfoEntity> page,ActivityInviteQueryReq req){
         ResultPage<ActivityInviteInfoDto> dtoResultPage = new ResultPage<>();
         dtoResultPage.setCurrent(page.getCurrent());
         dtoResultPage.setPages(page.getPages());
@@ -143,36 +184,23 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
         return dtoResultPage;
     }
 
+
+
+
+
     /**
-     * 查询用户自己的创建的活动
-     *
-     * @param req
+     * 头像信息
+     * @param detailDto
      */
-    @Override
-    public ResultPage<ActivityInviteInfoDto> queryUserInvite(ActivityInviteQueryReq req) {
-        IPage<ActivityInviteInfoEntity> page = activityInviteQueryComponent.queryPageInvite(req,true);
-        ResultPage<ActivityInviteInfoDto> dtoResultPage = new ResultPage<>();
-        dtoResultPage.setCurrent(page.getCurrent());
-        dtoResultPage.setPages(page.getPages());
-        dtoResultPage.setSize(page.getSize());
-        dtoResultPage.setTotal(page.getTotal());
-        if (CollUtil.isNotEmpty(page.getRecords())){
-            dtoResultPage.setRecords(
-                    page.getRecords().stream().map(i->{
-                        ActivityInviteInfoDto dto = new ActivityInviteInfoDto();
-                        BeanUtil.copyProperties(i,dto);
-                        // 处理状态
-                        handlerDesc(dto);
-                        // 计算地理位置
-                        handlerLbs(dto,req);
-                        // 计算时间
-                        handlerInviteTimeDesc(dto);
-                        return dto;
-                    }).collect(Collectors.toList())
-            );
+    private void handlerUserInfo(ActivityInviteDetailDto detailDto){
+        UserBasicInfoEntity userBasicInfoEntity = iInviteUserBasicInfoDal.getByUid(detailDto.getUid());
+        if (userBasicInfoEntity != null){
+            InviteSponsorUserDto dto = new InviteSponsorUserDto();
+            BeanUtils.copyProperties(userBasicInfoEntity,dto);
+            detailDto.setSponsorInfo(dto);
         }
-        return dtoResultPage;
     }
+
 
 
     /**
@@ -198,21 +226,21 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
                 if (ActivityInviteJoinStateEnums.INVITING.equals(joinStateEnums)){
                     long now = System.currentTimeMillis();
                     // 已结束
-                    if (activityInviteInfoDto.getEndTime() != null && activityInviteInfoDto.getEndTime().getTime() > now){
-                        activityInviteInfoDto.setInviteStatusDesc(ActivityInviteJoinStateEnums.END.getDesc());
-                        return;
+                    if (activityInviteInfoDto.getEndTime() != null && activityInviteInfoDto.getEndTime().getTime() < now){
+                        joinStateEnums = ActivityInviteJoinStateEnums.END;
                     }
                     // 已满额
-                    if (activityInviteInfoDto.getJoinNumber() >= activityInviteInfoDto.getInviteNumber()){
-                        activityInviteInfoDto.setInviteStatusDesc(ActivityInviteJoinStateEnums.FINISHED.getDesc());
-                        return;
+                    else if (activityInviteInfoDto.getJoinNumber() >= activityInviteInfoDto.getInviteNumber()){
+                        joinStateEnums = ActivityInviteJoinStateEnums.FINISHED;
                     }
                     // 报名截止
-                    if (activityInviteInfoDto.getJoinDeadline() != null && now > activityInviteInfoDto.getJoinDeadline().getTime()){
-                        activityInviteInfoDto.setInviteStatusDesc(ActivityInviteJoinStateEnums.TIME_LINE.getDesc());
-                        return;
+                    else if (activityInviteInfoDto.getJoinDeadline() != null && now > activityInviteInfoDto.getJoinDeadline().getTime()){
+                        joinStateEnums = ActivityInviteJoinStateEnums.TIME_LINE;
                     }
                 }
+                activityInviteInfoDto.setInviteStatusDesc(joinStateEnums.getDesc());
+                activityInviteInfoDto.setJoinStatus(joinStateEnums.getState());
+
             default:
         }
     }
@@ -224,15 +252,13 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
             Date now = new Date();
 
             String beginTime = DateUtil.format(activityInviteInfoDto.getStartTime(),"MM/dd HH:mm");
-            String endTime;
+            String endTime  = DateUtil.format(activityInviteInfoDto.getEndTime(),"HH:mm");
             // 相差的天数
-            long l = DateUtil.betweenDay(activityInviteInfoDto.getStartTime(), activityInviteInfoDto.getEndTime(),true);
-            if (l != 0){
-                endTime = DateUtil.format(activityInviteInfoDto.getEndTime(),"MM/dd HH:mm");
-            }else {
-                endTime = DateUtil.format(activityInviteInfoDto.getEndTime(),"HH:mm");
-            }
-            String timeDesc = beginTime + "-"+ endTime;
+//            long l = DateUtil.between(activityInviteInfoDto.getStartTime(), activityInviteInfoDto.getEndTime(),DateUnit.MINUTE);
+//            BigDecimal bigDecimal = new BigDecimal(l);
+//            bigDecimal = bigDecimal.divide(new BigDecimal(60),1,RoundingMode.UP);
+//            double v =bigDecimal.doubleValue();
+            String timeDesc = beginTime + "-"+ endTime ;
             activityInviteInfoDto.setInviteTimeDesc(timeDesc);
 
             String inviteTimeWeekDesc = "";
@@ -292,6 +318,9 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
             }
             activityInviteInfoDto.setInviteTimeWeekDesc(inviteTimeWeekDesc);
         }
+        if (activityInviteInfoDto.getJoinDeadline() != null){
+            activityInviteInfoDto.setJoinDeadlineDesc( DateUtil.format(activityInviteInfoDto.getJoinDeadline(),"MM/dd HH:mm"));
+        }
     }
 
     /**
@@ -302,7 +331,11 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
                 StrUtil.isEmpty(activityInviteInfoDto.getCourtLatitude()) || StrUtil.isEmpty(activityInviteInfoDto.getCourtLongitude())){
             return;
         }
-        double meter1 = LbsUtils.getDistance(userLbs.getLatitude(),userLbs.getLongitude(),activityInviteInfoDto.getCourtLatitude(),activityInviteInfoDto.getCourtLongitude());
-        activityInviteInfoDto.setLbsDistance((int)meter1);
+        double mater = LbsUtils.getDistance(userLbs.getLatitude(),userLbs.getLongitude(),activityInviteInfoDto.getCourtLatitude(),activityInviteInfoDto.getCourtLongitude());
+        BigDecimal bigDecimal = new BigDecimal(mater);
+        bigDecimal = bigDecimal.divide(new BigDecimal(1000),1,RoundingMode.DOWN);
+        double v = bigDecimal.doubleValue();
+        v = Math.max(v,0.1);
+        activityInviteInfoDto.setLbsDistance(v);
     }
 }

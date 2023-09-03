@@ -57,6 +57,9 @@ public class InviteUserJoinComponent {
             Date now = new Date();
             userEntity.setJoinUid(req.getUid());
             userEntity.setInviteCode(infoEntity.getInviteCode());
+            userEntity.setJoinUserNick(joinModel.getJoinUserInfo().getUserNick());
+            userEntity.setJoinUserAvatar(joinModel.getJoinUserInfo().getUserAvatar());
+            userEntity.setJoinUserSex(joinModel.getJoinUserInfo().getUserSex());
             userEntity.setDataVersion(oldJoinIndex + 1);
             userEntity.setCreateTime(now);
             userEntity.setUpdateTime(now);

@@ -15,11 +15,11 @@ public enum ActivityInviteJoinStateEnums {
 
     INVITING(10,"报名中"),
 
-    FINISHED(20,"已满员"),
+    FINISHED(20,"名额已满"),
 
-    TIME_LINE(30,"已截止"),
+    TIME_LINE(30,"报名截止"),
 
-    END(40,"已结束"),
+    END(40,"活动结束"),
 
     ;
 

@@ -35,6 +35,7 @@ public class InviteJoinUserDalImpl extends BaseAdminService<InviteJoinUserMapper
         if (state != null){
             lqw.eq(InviteJoinUserEntity::getStatus,state);
         }
+        lqw.orderByAsc(InviteJoinUserEntity::getUpdateTime);
         return list(lqw);
     }
 
