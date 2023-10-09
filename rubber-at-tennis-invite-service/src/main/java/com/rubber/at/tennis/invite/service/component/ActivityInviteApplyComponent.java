@@ -10,6 +10,7 @@ import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.enums.ActivityInviteStateEnums;
 import com.rubber.at.tennis.invite.dao.dal.IActivityInviteInfoDal;
 import com.rubber.at.tennis.invite.dao.dal.IInviteConfigFieldDal;
+import com.rubber.at.tennis.invite.dao.dal.IInviteUserBasicInfoDal;
 import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.InviteConfigFieldEntity;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
@@ -40,6 +41,9 @@ public class ActivityInviteApplyComponent {
 
     @Resource
     private IInviteConfigFieldDal inviteConfigFieldDal;
+
+    @Resource
+    private IInviteUserBasicInfoDal iInviteUserBasicInfoDal;
 
 
     /**
@@ -85,6 +89,8 @@ public class ActivityInviteApplyComponent {
                 throw new RubberServiceException(SysCode.SYSTEM_BUS);
             }
             saveConfigField(inviteInfoEntity,dto.getConfigField());
+            // 保存联系信息
+            saveOrUpdateUserContact(dto,dto.getConfigField());
             //保存扩展参数
             return inviteInfoEntity;
         }else {
@@ -97,6 +103,8 @@ public class ActivityInviteApplyComponent {
             this.updateInviteByCode(inviteInfoEntity,dto);
             // 保存拓展参数
             saveConfigField(inviteInfoEntity,dto.getConfigField());
+            // 保存联系信息
+            saveOrUpdateUserContact(dto,dto.getConfigField());
             return inviteInfoEntity;
         }
     }
@@ -124,7 +132,12 @@ public class ActivityInviteApplyComponent {
         inviteConfigFieldDal.removeAndSaveList(inviteInfoEntity.getInviteCode(),list);
     }
 
-
+    // 保存用户手机号
+    private void saveOrUpdateUserContact(BaseLbsUserSession baseLbsUserSession,JSONObject configData){
+        String userWx = configData.getString("sponsorContactWx");
+        String userPhone = configData.getString("sponsorContactPhone");
+        iInviteUserBasicInfoDal.updateContact(baseLbsUserSession.getUid(),userPhone,userWx);
+    }
 
 
 

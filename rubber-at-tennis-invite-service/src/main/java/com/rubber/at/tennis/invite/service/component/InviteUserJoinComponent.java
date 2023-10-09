@@ -1,7 +1,10 @@
 package com.rubber.at.tennis.invite.service.component;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.rubber.at.tennis.invite.api.dto.req.CancelJoinInviteReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
+import com.rubber.at.tennis.invite.api.dto.req.InviteJoinReq;
 import com.rubber.at.tennis.invite.api.enums.InviteJoinStateEnums;
 import com.rubber.at.tennis.invite.dao.dal.IActivityInviteInfoDal;
 import com.rubber.at.tennis.invite.dao.dal.IInviteJoinUserDal;
@@ -12,11 +15,15 @@ import com.rubber.at.tennis.invite.service.common.exception.RubberServiceExcepti
 import com.rubber.at.tennis.invite.service.model.InviteJoinModel;
 import com.rubber.base.components.util.result.code.SysCode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author luffyu
@@ -42,7 +49,7 @@ public class InviteUserJoinComponent {
     )
     public void joinInvite(InviteJoinModel joinModel){
         try {
-            InviteInfoCodeReq req = joinModel.getReq();
+            InviteJoinReq req = joinModel.getReq();
             ActivityInviteInfoEntity infoEntity = joinModel.getActivityInviteInfoEntity();
             int oldJoinIndex = infoEntity.getJoinNumber();
 
@@ -51,6 +58,8 @@ public class InviteUserJoinComponent {
                 // 报名重入
                 return;
             }
+
+            List<InviteJoinUserEntity> entityList = new ArrayList<>();
             if (userEntity == null){
                 userEntity = new InviteJoinUserEntity();
             }
@@ -60,15 +69,29 @@ public class InviteUserJoinComponent {
             userEntity.setJoinUserNick(joinModel.getJoinUserInfo().getUserNick());
             userEntity.setJoinUserAvatar(joinModel.getJoinUserInfo().getUserAvatar());
             userEntity.setJoinUserSex(joinModel.getJoinUserInfo().getUserSex());
-            userEntity.setDataVersion(oldJoinIndex + 1);
+            userEntity.setDataVersion(req.getUid());
             userEntity.setCreateTime(now);
             userEntity.setUpdateTime(now);
             userEntity.setStatus(InviteJoinStateEnums.SUCCESS.getState());
-            if (this.updateInviteForJoin(infoEntity, oldJoinIndex, userEntity.getDataVersion())
-                    && iInviteJoinUserDal.saveOrUpdate(userEntity)) {
-                return ;
+            entityList.add(userEntity);
+
+            // 报名的人数
+            int joinNum = 1 +  joinModel.getReq().getCarryFriendNum();
+            List<InviteJoinUserEntity> friendList = new ArrayList<>();
+            for (int i=0; i< joinModel.getReq().getCarryFriendNum();i++){
+                InviteJoinUserEntity tmpEntity = new InviteJoinUserEntity();
+                BeanUtils.copyProperties(userEntity,tmpEntity,"id");
+                tmpEntity.setJoinUserNick(userEntity.getJoinUserNick()+"+"+(i+1));
+                tmpEntity.setDataVersion(Integer.valueOf(req.getUid() + String.valueOf(i)));
+                friendList.add(tmpEntity);
             }
-            throw new RubberServiceException(SysCode.SYSTEM_BUS);
+            // 更新版本
+            // 批量写入参与用户
+            if (!this.updateInviteForJoin(infoEntity, oldJoinIndex, oldJoinIndex+joinNum)
+                    || !iInviteJoinUserDal.saveOrUpdate(userEntity)
+                    || (CollUtil.isNotEmpty(friendList) &&  !iInviteJoinUserDal.saveBatch(friendList))) {
+                throw new RubberServiceException(SysCode.SYSTEM_BUS);
+            }
         }catch (Exception e){
             throw new RubberServiceException(SysCode.SYSTEM_BUS);
         }
@@ -80,22 +103,24 @@ public class InviteUserJoinComponent {
     @Transactional(
             rollbackFor = Exception.class
     )
-    public void cancelJoinInvite(Integer uid,ActivityInviteInfoEntity inviteInfoEntity){
-        // 建议用户是否有参与
-        InviteJoinUserEntity joinUser = iInviteJoinUserDal.getInviteJoinUser(inviteInfoEntity.getInviteCode(), uid);
-        if (joinUser == null){
+    public void cancelJoinInvite(CancelJoinInviteReq req ,ActivityInviteInfoEntity inviteInfoEntity){
+        List<InviteJoinUserEntity> joinUserList ;
+        if (Integer.valueOf(1).equals(req.getCancelType())){
+            joinUserList = iInviteJoinUserDal.getInviteJoinUserByIds(inviteInfoEntity.getInviteCode(), null,req.getCancelJoinUserIds());
+        }else {
+            joinUserList = iInviteJoinUserDal.getInviteJoinUserByIds(inviteInfoEntity.getInviteCode(), req.getUid(),req.getCancelJoinUserIds());
+        }
+        if (CollUtil.isEmpty(joinUserList)){
             throw new RubberServiceException(ErrorCodeEnums.USER_NOT_JOINED);
         }
-        if (InviteJoinStateEnums.CLOSE.getState().equals(joinUser.getStatus())){
-            // 已取消
+        List<Integer> needUpdataList = joinUserList.stream().map(InviteJoinUserEntity::getId).collect(Collectors.toList());
+        int trueCancelSize = needUpdataList.size();
+        if (trueCancelSize <= 0){
             return;
         }
-        joinUser.setUpdateTime(new Date());
-        joinUser.setStatus(InviteJoinStateEnums.CLOSE.getState());
-        joinUser.setDataVersion(joinUser.getJoinUid());
         int oldJoinNumber = inviteInfoEntity.getJoinNumber();
-        if (this.updateInviteForJoin(inviteInfoEntity, oldJoinNumber, Math.max(oldJoinNumber-1,0))
-                && iInviteJoinUserDal.updateById(joinUser)) {
+        if (this.updateInviteForJoin(inviteInfoEntity, oldJoinNumber, Math.max(oldJoinNumber-trueCancelSize,0))
+                && iInviteJoinUserDal.removeByIds(needUpdataList)) {
             return;
         }
         throw new RubberServiceException(SysCode.SYSTEM_BUS);

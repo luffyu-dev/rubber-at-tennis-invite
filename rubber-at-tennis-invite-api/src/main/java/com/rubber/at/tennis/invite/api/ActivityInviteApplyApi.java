@@ -1,7 +1,9 @@
 package com.rubber.at.tennis.invite.api;
 
 import com.rubber.at.tennis.invite.api.dto.ApplyInviteInfoDto;
+import com.rubber.at.tennis.invite.api.dto.req.CancelJoinInviteReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
+import com.rubber.at.tennis.invite.api.dto.req.InviteJoinReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
 
 /**
@@ -36,12 +38,12 @@ public interface ActivityInviteApplyApi {
      * 加入活动
      * 带多个人参加
      */
-    InviteCodeResponse joinInvite(InviteInfoCodeReq req);
+    InviteCodeResponse joinInvite(InviteJoinReq req);
 
 
     /**
      * 取消加入活动
      */
-    InviteCodeResponse cancelJoinInvite(InviteInfoCodeReq req);
+    InviteCodeResponse cancelJoinInvite(CancelJoinInviteReq req);
 
 }

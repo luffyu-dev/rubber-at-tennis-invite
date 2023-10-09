@@ -1,5 +1,6 @@
 package com.rubber.at.tennis.invite.api;
 
+import com.rubber.at.tennis.invite.api.dto.InviteSponsorUserDto;
 import com.rubber.at.tennis.invite.api.dto.RecordTennisModel;
 import com.rubber.at.tennis.invite.api.dto.UserModifyTennisDto;
 import com.rubber.at.tennis.invite.api.dto.UserTennisDetail;
@@ -14,6 +15,13 @@ import java.util.List;
  */
 public interface UserTennisApi {
 
+
+    /**
+     * 查询用户基本信息
+     * @param userSession
+     * @return
+     */
+    InviteSponsorUserDto getUserBasicInfo(BaseUserSession userSession);
 
     /**
      * 查询用户的网球相关信息

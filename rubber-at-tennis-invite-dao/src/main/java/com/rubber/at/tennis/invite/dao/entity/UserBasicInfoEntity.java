@@ -86,5 +86,15 @@ public class UserBasicInfoEntity extends BaseEntity {
     @Version
     private Integer version;
 
+    /**
+     * 用户手机号
+     */
+    private String userPhone;
+
+    /**
+     * 用户微信号
+     */
+    private String userWx;
+
 
 }

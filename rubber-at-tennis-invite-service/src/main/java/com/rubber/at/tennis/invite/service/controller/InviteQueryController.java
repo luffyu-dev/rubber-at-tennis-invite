@@ -46,6 +46,7 @@ public class InviteQueryController {
      * @param req 当前的请求入参
      * @return
      */
+    @NeedLogin
     @PostMapping("/list-join")
     public ResultMsg listJoin(@RequestBody InviteInfoCodeReq req){
         List<InviteJoinUserDto> inviteInfo = activityInviteQueryApi.getInviteJoinList(req);

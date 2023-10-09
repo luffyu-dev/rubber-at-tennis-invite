@@ -88,8 +88,13 @@ public class ActivityInviteQueryComponent {
      * @return
      */
     public List<InviteJoinUserDto> queryJoinedUser(InviteInfoCodeReq req){
-        // 查询参与的用户
-        List<InviteJoinUserEntity> inviteJoinUserEntities = joinUserDal.queryJoinByCode(req.getInviteCode(), InviteJoinStateEnums.SUCCESS.getState());
+        List<InviteJoinUserEntity> inviteJoinUserEntities;
+        if (req.isQuerySelfJoin()){
+            inviteJoinUserEntities = joinUserDal.querySelfFriendJoinByCode(req.getInviteCode(), InviteJoinStateEnums.SUCCESS.getState(),req.getUid());
+        }else {
+            // 查询参与的用户
+            inviteJoinUserEntities = joinUserDal.queryJoinByCode(req.getInviteCode(), InviteJoinStateEnums.SUCCESS.getState());
+        }
         if (CollUtil.isEmpty(inviteJoinUserEntities)){
             return new ArrayList<>();
         }
@@ -111,6 +116,9 @@ public class ActivityInviteQueryComponent {
         page.setSize(req.getSize());
 
         LambdaQueryWrapper<ActivityInviteInfoEntity> lqw = new LambdaQueryWrapper<>();
+        if (req.getShowLimit() != null){
+            lqw.eq(ActivityInviteInfoEntity::getShowLimit,req.getShowLimit());
+        }
         if (StrUtil.isNotEmpty(req.getCity() )){
             lqw.eq(ActivityInviteInfoEntity::getCourtCity,req.getCity());
         }

@@ -61,4 +61,16 @@ public class UserTennisController {
     }
 
 
+
+    /**
+     * 查询用户的信息
+     * @param baseUserSession  用户信息
+     */
+    @NeedLogin
+    @PostMapping("/basic")
+    public ResultMsg getUserBasicInfo(@RequestBody  BaseUserSession baseUserSession){
+        return ResultMsg.success(userTennisApi.getUserBasicInfo(baseUserSession));
+    }
+
+
 }

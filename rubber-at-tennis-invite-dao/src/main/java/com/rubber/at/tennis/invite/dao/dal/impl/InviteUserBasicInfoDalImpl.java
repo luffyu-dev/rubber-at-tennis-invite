@@ -1,10 +1,12 @@
 package com.rubber.at.tennis.invite.dao.dal.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
 import com.rubber.at.tennis.invite.dao.mapper.InviteUserBasicInfoMapper;
 import com.rubber.at.tennis.invite.dao.dal.IInviteUserBasicInfoDal;
 import com.rubber.base.components.mysql.plugins.admin.BaseAdminService;
+import org.codehaus.groovy.util.StringUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -32,6 +34,38 @@ public class InviteUserBasicInfoDalImpl extends BaseAdminService<InviteUserBasic
         LambdaQueryWrapper<UserBasicInfoEntity> lqw = new LambdaQueryWrapper<>();
         lqw.eq(UserBasicInfoEntity::getUid,uid);
         return getOne(lqw);
+    }
+
+    /**
+     * 联系信息
+     *
+     * @param uid
+     * @param userPhone
+     * @param userWx
+     * @return
+     */
+    @Override
+    public boolean updateContact(Integer uid, String userPhone, String userWx) {
+        if (StrUtil.isEmpty(userWx) && StrUtil.isEmpty(userPhone)){
+            return false;
+        }
+        UserBasicInfoEntity userBasicInfo = getByUid(uid);
+        if (userBasicInfo == null){
+            return false;
+        }
+        boolean  needUpdate  =false;
+        if (userWx != null && !userWx.equals(userBasicInfo.getUserWx())){
+            userBasicInfo.setUserWx(userWx);
+            needUpdate = true;
+        }
+        if (userPhone != null && !userPhone.equals(userBasicInfo.getUserPhone())){
+            userBasicInfo.setUserPhone(userPhone);
+            needUpdate = true;
+        }
+        if (!needUpdate){
+            return false;
+        }
+        return updateById(userBasicInfo);
     }
 
     /**

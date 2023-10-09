@@ -110,6 +110,14 @@ public class ApplyInviteInfoDto extends InviteInfoCodeReq {
     private String remark;
 
 
+    /**
+     * 是否公开限制
+     * 0:公开所有人可见
+     * 1:仅邀请可见
+     */
+    private Integer showLimit;
+
+
 
     /**
      * 是否自动发布

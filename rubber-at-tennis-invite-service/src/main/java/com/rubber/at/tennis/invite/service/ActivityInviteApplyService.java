@@ -5,12 +5,18 @@ import com.rubber.at.tennis.invite.api.ActivityInviteApplyApi;
 import com.rubber.at.tennis.invite.api.UserTennisApi;
 import com.rubber.at.tennis.invite.api.dto.ApplyInviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.RecordTennisModel;
+import com.rubber.at.tennis.invite.api.dto.req.CancelJoinInviteReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
+import com.rubber.at.tennis.invite.api.dto.req.InviteJoinReq;
 import com.rubber.at.tennis.invite.api.dto.response.InviteCodeResponse;
 import com.rubber.at.tennis.invite.api.enums.ActivityInviteStateEnums;
+import com.rubber.at.tennis.invite.api.enums.AllowCancelLimitEnums;
+import com.rubber.at.tennis.invite.api.enums.JoinTimeLimitEnums;
 import com.rubber.at.tennis.invite.api.enums.RecordTypeEnums;
+import com.rubber.at.tennis.invite.dao.dal.IInviteConfigFieldDal;
 import com.rubber.at.tennis.invite.dao.dal.IInviteUserBasicInfoDal;
 import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
+import com.rubber.at.tennis.invite.dao.entity.InviteConfigFieldEntity;
 import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
 import com.rubber.at.tennis.invite.service.common.exception.ErrorCodeEnums;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
@@ -40,6 +46,9 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
 
     @Autowired
     private ActivityInviteApplyComponent activityInviteApplyComponent;
+
+    @Autowired
+    private IInviteConfigFieldDal inviteConfigFieldDal;
 
     @Autowired
     private ActivityInviteQueryComponent inviteQueryComponent;
@@ -106,7 +115,7 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
      * @param req
      */
     @Override
-    public InviteCodeResponse joinInvite(InviteInfoCodeReq req) {
+    public InviteCodeResponse joinInvite(InviteJoinReq req) {
         ReentrantLock joinLock = buildInviteLock(req.getInviteCode());
 
         try {
@@ -117,7 +126,7 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
             // 获取邀请详情
             ActivityInviteInfoEntity infoEntity = inviteQueryComponent.getByCode(req);
             // 校验是否已经完成
-            this.doCheckInviteInfo(infoEntity);
+            this.doCheckInviteInfo(infoEntity,req);
             // 参与的用户信息
             UserBasicInfoEntity joinUserInfo = iInviteUserBasicInfoDal.getByUid(req.getUid());
             if (joinUserInfo == null){
@@ -129,7 +138,7 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
             inviteUserJoinComponent.joinInvite(joinModel);
 
             // 对接写入操作日期
-            doHandlerTennisRecord(req,infoEntity);
+            //doHandlerTennisRecord(req,infoEntity);
 
             // 返回
             return new InviteCodeResponse(req.getInviteCode());
@@ -147,7 +156,7 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
      * @param req
      */
     @Override
-    public InviteCodeResponse cancelJoinInvite(InviteInfoCodeReq req) {
+    public InviteCodeResponse cancelJoinInvite(CancelJoinInviteReq req) {
         ReentrantLock joinLock = buildInviteLock(req.getInviteCode());
         try {
             if(!joinLock.tryLock(500, TimeUnit.MILLISECONDS)){
@@ -157,13 +166,14 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
             // 取消自己参与的活动
             // 校验活动是否存在
             ActivityInviteInfoEntity infoEntity = inviteQueryComponent.getByCode(req);
-            // 校验是否可以编辑
-            if (ActivityInviteStateEnums.CLOSE.getState().equals(infoEntity.getStatus())) {
-                throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
-            }
-            inviteUserJoinComponent.cancelJoinInvite(req.getUid(), infoEntity);
+
+            // 取消报名限制
+            doCheckInviteInfoCancel(infoEntity,req);
+
+            // 取消
+            inviteUserJoinComponent.cancelJoinInvite(req,infoEntity);
             // 取消关联的网球记录信息
-            userTennisApi.cancelTennisRecord(req, infoEntity.getInviteCode());
+            //userTennisApi.cancelTennisRecord(req, infoEntity.getInviteCode());
 
             return new InviteCodeResponse(req.getInviteCode());
 
@@ -208,7 +218,7 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
      * 校验邀请事件是否可参与
      * @param infoEntity 当前的邀请对象
      */
-    private void doCheckInviteInfo(ActivityInviteInfoEntity infoEntity){
+    private void doCheckInviteInfo(ActivityInviteInfoEntity infoEntity,InviteJoinReq req){
         // 校验是否已经完成
         if (!ActivityInviteStateEnums.PUBLISHED.getState().equals(infoEntity.getStatus())){
             throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
@@ -217,20 +227,67 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
             // 邀请人员已完成
             throw new RubberServiceException(ErrorCodeEnums.USER_IS_FULL);
         }
-        Date now = new Date();
-        if (infoEntity.getJoinDeadline() != null && now.getTime() > infoEntity.getJoinDeadline().getTime()){
-            throw new RubberServiceException(ErrorCodeEnums.INVITE_TIME_JOIN_DEADLINE);
+        if (req.getCarryFriendNum() > 0){
+            if ((infoEntity.getJoinNumber() + req.getCarryFriendNum() + 1 ) > infoEntity.getInviteNumber()){
+                // 邀请人员已完成
+                throw new RubberServiceException(ErrorCodeEnums.USER_IS_FULL_MAX);
+            }
         }
-
+        Date now = new Date();
         if (infoEntity.getStartTime() != null && now.getTime() > infoEntity.getStartTime().getTime()){
-            throw new RubberServiceException(ErrorCodeEnums.INVITE_TIME_JOIN_DEADLINE);
+            throw new RubberServiceException(ErrorCodeEnums.INVITE_STARTED);
         }
         if (infoEntity.getEndTime() != null && now.getTime() > infoEntity.getEndTime().getTime()){
             throw new RubberServiceException(ErrorCodeEnums.INVITE_FINISHED);
         }
 
+        // 报名截止限制
+        InviteConfigFieldEntity configFieldEntity = inviteConfigFieldDal.queryByCode(infoEntity.getInviteCode(), "joinTimeLimit");
+        if (null != configFieldEntity){
+            Date joinDateLineTime = JoinTimeLimitEnums.getJoinDateLineTime(configFieldEntity.getInviteValue(), infoEntity.getStartTime());
+            if (joinDateLineTime != null && now.getTime() > joinDateLineTime.getTime()){
+                throw new RubberServiceException(ErrorCodeEnums.INVITE_TIME_JOIN_DEADLINE);
+            }
+        }
     }
 
+
+    /**
+     * 校验邀请事件是否可参与
+     * @param infoEntity 当前的邀请对象
+     */
+    private void doCheckInviteInfoCancel(ActivityInviteInfoEntity infoEntity,CancelJoinInviteReq req){
+        if (Integer.valueOf(1).equals(req.getCancelType()) && !infoEntity.getUid().equals(req.getUid())){
+            throw new RubberServiceException(SysCode.PARAM_ERROR);
+        }
+        // 校验是否可以编辑
+        if (ActivityInviteStateEnums.CLOSE.getState().equals(infoEntity.getStatus())) {
+            throw new RubberServiceException(ErrorCodeEnums.INVITE_CLOSE);
+        }
+
+        Date now = new Date();
+        if (infoEntity.getStartTime() != null && now.getTime() > infoEntity.getStartTime().getTime()){
+            throw new RubberServiceException(ErrorCodeEnums.INVITE_STARTED);
+        }
+        if (infoEntity.getEndTime() != null && now.getTime() > infoEntity.getEndTime().getTime()){
+            throw new RubberServiceException(ErrorCodeEnums.INVITE_FINISHED);
+        }
+
+        // 取消限制
+        InviteConfigFieldEntity configFieldEntity = inviteConfigFieldDal.queryByCode(infoEntity.getInviteCode(), "allowCancel");
+        if (configFieldEntity == null){
+            return;
+        }
+        Date date = AllowCancelLimitEnums.cancelDataLine(configFieldEntity.getInviteValue(), infoEntity.getStartTime());
+        if (date == null){
+            // 不可取消
+            throw new RubberServiceException(ErrorCodeEnums.CANT_CANCEL_JOIN);
+        }
+        if ( now.getTime() > date.getTime()){
+            throw new RubberServiceException(ErrorCodeEnums.CANCEL_JOIN_DATA_LINE);
+        }
+
+    }
 
 
     /**

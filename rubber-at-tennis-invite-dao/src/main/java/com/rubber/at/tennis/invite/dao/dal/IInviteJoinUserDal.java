@@ -27,8 +27,24 @@ public interface IInviteJoinUserDal extends IBaseAdminService<InviteJoinUserEnti
 
 
     /**
+     * 通过code查询参与人信息
+     *
+     * @param code
+     * @return
+     */
+    List<InviteJoinUserEntity> querySelfFriendJoinByCode(String code, Integer state,Integer joinUid);
+
+
+    /**
      * 通过code + uid 查询一个是是否参与
      */
     InviteJoinUserEntity getInviteJoinUser(String code, Integer uid);
+
+
+
+    /**
+     * 通过code + uid 查询一个是是否参与
+     */
+    List<InviteJoinUserEntity> getInviteJoinUserByIds(String code, Integer uid,List<Integer> ids);
 
 }

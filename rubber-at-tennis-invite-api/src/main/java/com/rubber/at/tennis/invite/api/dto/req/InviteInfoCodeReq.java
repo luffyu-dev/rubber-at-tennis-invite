@@ -25,6 +25,12 @@ public class InviteInfoCodeReq extends BaseLbsUserSession {
      */
     private String inviteCode;
 
+    /**
+     * 是否查询自己报名的所有用户
+     * 携带的朋友
+     */
+    private boolean querySelfJoin;
+
 
 
 

@@ -40,6 +40,24 @@ public class InviteJoinUserDalImpl extends BaseAdminService<InviteJoinUserMapper
     }
 
     /**
+     * 通过code查询参与人信息
+     *
+     * @param code
+     * @param state
+     * @param joinUid
+     * @return
+     */
+    @Override
+    public List<InviteJoinUserEntity> querySelfFriendJoinByCode(String code, Integer state, Integer joinUid) {
+        LambdaQueryWrapper<InviteJoinUserEntity> lqw = new LambdaQueryWrapper<>();
+        lqw.eq(InviteJoinUserEntity::getInviteCode,code)
+                .eq(InviteJoinUserEntity::getStatus,state)
+                .eq(InviteJoinUserEntity::getJoinUid,joinUid)
+                .orderByAsc(InviteJoinUserEntity::getUpdateTime);
+        return list(lqw);
+    }
+
+    /**
      * 通过code + uid 查询一个是是否参与
      *
      * @param code
@@ -49,8 +67,27 @@ public class InviteJoinUserDalImpl extends BaseAdminService<InviteJoinUserMapper
     public InviteJoinUserEntity getInviteJoinUser(String code, Integer uid) {
         LambdaQueryWrapper<InviteJoinUserEntity> lqw = new LambdaQueryWrapper<>();
         lqw.eq(InviteJoinUserEntity::getInviteCode,code)
-                .eq(InviteJoinUserEntity::getJoinUid,uid);
+                .eq(InviteJoinUserEntity::getJoinUid,uid)
+                .eq(InviteJoinUserEntity::getDataVersion,uid);
         return getOne(lqw);
+    }
+
+    /**
+     * 通过code + uid 查询一个是是否参与
+     *
+     * @param code
+     * @param uid
+     * @param ids
+     */
+    @Override
+    public List<InviteJoinUserEntity> getInviteJoinUserByIds(String code, Integer uid, List<Integer> ids) {
+        LambdaQueryWrapper<InviteJoinUserEntity> lqw = new LambdaQueryWrapper<>();
+        lqw.eq(InviteJoinUserEntity::getInviteCode,code)
+                .in(InviteJoinUserEntity::getId,ids);
+        if (uid != null ){
+            lqw.eq(InviteJoinUserEntity::getJoinUid,uid);
+        }
+        return list(lqw);
     }
 
 }

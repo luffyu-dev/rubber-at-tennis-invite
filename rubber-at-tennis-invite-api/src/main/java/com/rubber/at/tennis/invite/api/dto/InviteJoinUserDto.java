@@ -18,6 +18,11 @@ public class InviteJoinUserDto  {
 
 
     /**
+     * 自增id
+     */
+    private Integer id;
+
+    /**
      * 邀请code
      */
     private String inviteCode;

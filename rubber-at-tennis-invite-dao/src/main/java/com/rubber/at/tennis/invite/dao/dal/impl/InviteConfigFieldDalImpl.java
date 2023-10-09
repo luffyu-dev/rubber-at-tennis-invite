@@ -55,4 +55,17 @@ public class InviteConfigFieldDalImpl extends BaseAdminService<InviteConfigField
         lqw.eq(InviteConfigFieldEntity::getInviteCode,code);
         return list(lqw);
     }
+
+    /**
+     * @param code
+     * @param key
+     * @return
+     */
+    @Override
+    public InviteConfigFieldEntity queryByCode(String code, String key) {
+        LambdaQueryWrapper<InviteConfigFieldEntity> lqw = new LambdaQueryWrapper<>();
+        lqw.eq(InviteConfigFieldEntity::getInviteCode,code)
+                .eq(InviteConfigFieldEntity::getInviteField,key);
+        return getOne(lqw);
+    }
 }

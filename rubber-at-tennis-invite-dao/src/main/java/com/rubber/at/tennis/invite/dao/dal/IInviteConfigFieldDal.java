@@ -23,4 +23,8 @@ public interface IInviteConfigFieldDal extends IBaseAdminService<InviteConfigFie
 
 
     List<InviteConfigFieldEntity> queryByCode(String code);
+
+
+
+    InviteConfigFieldEntity queryByCode(String code,String key);
 }

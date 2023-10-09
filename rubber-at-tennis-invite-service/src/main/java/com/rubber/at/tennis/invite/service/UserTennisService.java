@@ -5,10 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.rubber.at.tennis.invite.api.UserTennisApi;
-import com.rubber.at.tennis.invite.api.dto.LevelMatrixDto;
-import com.rubber.at.tennis.invite.api.dto.UserModifyTennisDto;
-import com.rubber.at.tennis.invite.api.dto.UserTennisDetail;
-import com.rubber.at.tennis.invite.api.dto.UserTrainInfo;
+import com.rubber.at.tennis.invite.api.dto.*;
 import com.rubber.at.tennis.invite.api.dto.req.UserTennisDateReq;
 import com.rubber.at.tennis.invite.api.enums.NtrpEnums;
 import com.rubber.at.tennis.invite.dao.dal.IInviteUserBasicInfoDal;
@@ -16,11 +13,11 @@ import com.rubber.at.tennis.invite.dao.dal.IUserTennisInfoDal;
 import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.UserTennisInfoEntity;
 import com.rubber.at.tennis.invite.service.common.exception.RubberServiceException;
-import com.rubber.at.tennis.invite.api.dto.RecordTennisModel;
 import com.rubber.at.tennis.invite.service.util.MyDataUtil;
 import com.rubber.base.components.util.result.code.SysCode;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +43,23 @@ public class UserTennisService implements UserTennisApi {
 
     @Autowired
     private IInviteUserBasicInfoDal iInviteUserBasicInfoDal;
+
+    /**
+     * 查询用户基本信息
+     *
+     * @param userSession
+     * @return
+     */
+    @Override
+    public InviteSponsorUserDto getUserBasicInfo(BaseUserSession userSession) {
+        UserBasicInfoEntity userBasicInfoEntity = iInviteUserBasicInfoDal.getByUid(userSession.getUid());
+        if (userBasicInfoEntity == null){
+            return null;
+        }
+        InviteSponsorUserDto dto = new InviteSponsorUserDto();
+        BeanUtils.copyProperties(userBasicInfoEntity,dto);
+        return dto;
+    }
 
     /**
      * 查询用户的网球相关信息

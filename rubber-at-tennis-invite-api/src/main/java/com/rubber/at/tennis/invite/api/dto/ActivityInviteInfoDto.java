@@ -152,4 +152,12 @@ public class ActivityInviteInfoDto extends InviteInfoCodeReq {
 
 
 
+    /**
+     * 是否公开限制
+     * 0:公开所有人可见
+     * 1:仅邀请可见
+     */
+    private Integer showLimit;
+
+
 }

@@ -190,4 +190,12 @@ public class ActivityInviteInfoEntity extends BaseEntity {
     private Integer templateType;
 
 
+
+    /**
+     * 是否公开限制
+     * 0:公开所有人可见
+     * 1:仅邀请可见
+     */
+    @TableField("Fshow_limit")
+    private Integer showLimit;
 }

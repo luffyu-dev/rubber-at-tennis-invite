@@ -30,4 +30,19 @@ public class InviteSponsorUserDto {
      * 0表示男 1表示女 2表示未知
      */
     private Integer userSex;
+
+    /**
+     * 用户手机号
+     */
+    private String userPhone;
+
+    /**
+     * 用户微信号
+     */
+    private String userWx;
+
+    /**
+     * 联系人信息补充标记
+     */
+    private Integer contactFlag;
 }

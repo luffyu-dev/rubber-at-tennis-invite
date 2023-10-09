@@ -44,4 +44,12 @@ public class ActivityInviteQueryReq extends InviteInfoCodeReq{
 
 
     private String searchValue;
+
+
+    /**
+     * 是否公开限制
+     * 0:公开所有人可见
+     * 1:仅邀请可见
+     */
+    private Integer showLimit;
 }

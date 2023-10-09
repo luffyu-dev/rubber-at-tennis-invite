@@ -23,6 +23,16 @@ public interface IInviteUserBasicInfoDal extends IBaseAdminService<UserBasicInfo
      */
     UserBasicInfoEntity getByUid(Integer uid);
 
+
+    /**
+     * 联系信息
+     * @param uid
+     * @param userPhone
+     * @param userWx
+     * @return
+     */
+    boolean updateContact(Integer uid,String userPhone,String userWx);
+
     /**
      * 查询用户的基础信息列表
      * @param uids 当前的uid集合

@@ -11,8 +11,7 @@ import com.rubber.at.tennis.invite.api.dto.*;
 import com.rubber.at.tennis.invite.api.dto.req.ActivityInviteQueryReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteTemplateQueryReq;
-import com.rubber.at.tennis.invite.api.enums.ActivityInviteJoinStateEnums;
-import com.rubber.at.tennis.invite.api.enums.ActivityInviteStateEnums;
+import com.rubber.at.tennis.invite.api.enums.*;
 import com.rubber.at.tennis.invite.dao.dal.IInviteUserBasicInfoDal;
 import com.rubber.at.tennis.invite.dao.entity.ActivityInviteInfoEntity;
 import com.rubber.at.tennis.invite.dao.entity.UserBasicInfoEntity;
@@ -67,11 +66,13 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
         // 处理用户基本信息
         handlerUserInfo(detailDto);
         // 处理状态
-        handlerDesc(detailDto);
+        handlerDesc(detailDto,detailDto.getConfigField());
         // 计算地理位置
         handlerLbs(detailDto,req);
         // 计算时间
         handlerInviteTimeDesc(detailDto);
+        // 参数处理
+        handlerConfigData(detailDto);
         return detailDto;
     }
 
@@ -98,6 +99,7 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
             req.setCity("深圳市");
         }
         req.setStatus(ActivityInviteStateEnums.PUBLISHED.getState());
+        req.setShowLimit(0);
         IPage<ActivityInviteInfoEntity> page = activityInviteQueryComponent.queryPageInvite(req,false);
         return convertPageDto(page,req);
     }
@@ -172,7 +174,7 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
                         ActivityInviteInfoDto dto = new ActivityInviteInfoDto();
                         BeanUtil.copyProperties(i,dto);
                         // 处理状态
-                        handlerDesc(dto);
+                        handlerDesc(dto,null);
                         // 计算地理位置
                         handlerLbs(dto,req);
                         // 计算时间
@@ -206,7 +208,7 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
     /**
      * 处理描述文案信息
      */
-    private void handlerDesc(ActivityInviteInfoDto activityInviteInfoDto){
+    private void handlerDesc(ActivityInviteInfoDto activityInviteInfoDto,JSONObject configData){
         ActivityInviteStateEnums inviteStateEnums = ActivityInviteStateEnums.getState(activityInviteInfoDto.getStatus());
         if (inviteStateEnums == null){
             activityInviteInfoDto.setInviteStatusDesc("已结束");
@@ -233,9 +235,11 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
                     else if (activityInviteInfoDto.getJoinNumber() >= activityInviteInfoDto.getInviteNumber()){
                         joinStateEnums = ActivityInviteJoinStateEnums.FINISHED;
                     }
-                    // 报名截止
-                    else if (activityInviteInfoDto.getJoinDeadline() != null && now > activityInviteInfoDto.getJoinDeadline().getTime()){
-                        joinStateEnums = ActivityInviteJoinStateEnums.TIME_LINE;
+                    else if (configData != null){
+                        Date limitTime = JoinTimeLimitEnums.getJoinDateLineTime(configData.getString("joinTimeLimit"),activityInviteInfoDto.getStartTime());
+                        if (now > limitTime.getTime()){
+                            joinStateEnums = ActivityInviteJoinStateEnums.TIME_LINE;
+                        }
                     }
                 }
                 activityInviteInfoDto.setInviteStatusDesc(joinStateEnums.getDesc());
@@ -254,55 +258,52 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
             String beginTime = DateUtil.format(activityInviteInfoDto.getStartTime(),"MM/dd HH:mm");
             String endTime  = DateUtil.format(activityInviteInfoDto.getEndTime(),"HH:mm");
             // 相差的天数
-//            long l = DateUtil.between(activityInviteInfoDto.getStartTime(), activityInviteInfoDto.getEndTime(),DateUnit.MINUTE);
-//            BigDecimal bigDecimal = new BigDecimal(l);
-//            bigDecimal = bigDecimal.divide(new BigDecimal(60),1,RoundingMode.UP);
-//            double v =bigDecimal.doubleValue();
             String timeDesc = beginTime + "-"+ endTime ;
             activityInviteInfoDto.setInviteTimeDesc(timeDesc);
 
             String inviteTimeWeekDesc = "";
             // 当前日期的天数
             long x = DateUtil.betweenDay(now, activityInviteInfoDto.getStartTime(),true);
-            if (x  >= 0 ){
-                switch ((int) x){
-                    case 0:
-                        inviteTimeWeekDesc ="今天";
-                        break;
-                    case 1:
-                        inviteTimeWeekDesc ="明天";
-                        break;
-                    case 2:
-                        inviteTimeWeekDesc ="后天";
-                        break;
-                    default:
-                        int week = DateUtil.dayOfWeek(activityInviteInfoDto.getStartTime());
-                        switch (week){
-                            case 1:
-                                inviteTimeWeekDesc ="周日";
-                                break;
-                            case 2:
-                                inviteTimeWeekDesc ="周一";
-                                break;
-                            case 3:
-                                inviteTimeWeekDesc ="周二";
-                                break;
-                            case 4:
-                                inviteTimeWeekDesc ="周三";
-                                break;
-                            case 5:
-                                inviteTimeWeekDesc ="周四";
-                                break;
-                            case 6:
-                                inviteTimeWeekDesc ="周五";
-                                break;
-                            case 7:
-                                inviteTimeWeekDesc ="周六";
-                                break;
-                            default:
-                        }
+            if (DateUtil.compare(now,activityInviteInfoDto.getStartTime()) > 0){
+                x = -x;
+            }
+            switch ((int) x){
+                case 0:
+                    inviteTimeWeekDesc ="今天";
+                    break;
+                case 1:
+                    inviteTimeWeekDesc ="明天";
+                    break;
+                case 2:
+                    inviteTimeWeekDesc ="后天";
+                    break;
+                default:
+                    int week = DateUtil.dayOfWeek(activityInviteInfoDto.getStartTime());
+                    switch (week){
+                        case 1:
+                            inviteTimeWeekDesc ="周日";
+                            break;
+                        case 2:
+                            inviteTimeWeekDesc ="周一";
+                            break;
+                        case 3:
+                            inviteTimeWeekDesc ="周二";
+                            break;
+                        case 4:
+                            inviteTimeWeekDesc ="周三";
+                            break;
+                        case 5:
+                            inviteTimeWeekDesc ="周四";
+                            break;
+                        case 6:
+                            inviteTimeWeekDesc ="周五";
+                            break;
+                        case 7:
+                            inviteTimeWeekDesc ="周六";
+                            break;
+                        default:
+                    }
 
-                }
             }
             int hour = DateUtil.hour(activityInviteInfoDto.getStartTime(), true);
             if (hour < 9){
@@ -337,5 +338,18 @@ public class ActivityInviteQueryService implements ActivityInviteQueryApi {
         double v = bigDecimal.doubleValue();
         v = Math.max(v,0.1);
         activityInviteInfoDto.setLbsDistance(v);
+    }
+
+
+    private void handlerConfigData(ActivityInviteDetailDto detailDto){
+        JSONObject configData = detailDto.getConfigField();
+        if(configData != null){
+            AllowCancelLimitEnums.getDesc(configData.getString("allowCancel"),detailDto.getStartTime(),configData);
+            CostTypeLimitEnums.getDesc(configData.getString("costType"),configData);
+            FriendLimitEnums.getDesc(configData.getString("friendLimit"),configData);
+            JoinTimeLimitEnums.getDesc(configData.getString("joinTimeLimit"),detailDto.getStartTime(),configData);
+            ShowLimitEnums.getDesc(configData.getString("showLimit"),configData);
+        }
+
     }
 }
