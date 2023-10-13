@@ -5,9 +5,9 @@ server:
 
 spring:
   application:
-    name: rubber-server-archetype
+    name: rubber-server-invite
   profiles:
-    active: dev
+    active: master
   jackson:
     date-format:  "yyyy-MM-dd HH:mm:ss"
     time-zone: "GMT+08:00"

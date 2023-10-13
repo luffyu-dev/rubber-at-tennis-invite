@@ -25,6 +25,7 @@ import com.rubber.at.tennis.invite.service.component.ActivityInviteQueryComponen
 import com.rubber.at.tennis.invite.service.component.InviteUserJoinComponent;
 import com.rubber.at.tennis.invite.service.model.InviteJoinModel;
 import com.rubber.base.components.util.result.code.SysCode;
+import com.rubber.base.components.util.result.exception.BaseResultRunTimeException;
 import com.rubber.base.components.util.session.BaseUserSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,7 +122,7 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
         try {
             if(!joinLock.tryLock(500, TimeUnit.MILLISECONDS)){
                 log.error("获取锁失败,req={}",req);
-                return new InviteCodeResponse(req.getInviteCode());
+                throw new RubberServiceException(ErrorCodeEnums.JOIN_INVITE_BUSY);
             }
             // 获取邀请详情
             ActivityInviteInfoEntity infoEntity = inviteQueryComponent.getByCode(req);
@@ -142,6 +143,9 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
 
             // 返回
             return new InviteCodeResponse(req.getInviteCode());
+        }catch (BaseResultRunTimeException e){
+            log.error("参与邀约出现异常{}",e.getMessage());
+            throw e;
         }catch (Exception e){
             log.error("参与邀约出现异常{}",e.getMessage());
             return new InviteCodeResponse(req.getInviteCode());
@@ -161,7 +165,7 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
         try {
             if(!joinLock.tryLock(500, TimeUnit.MILLISECONDS)){
                 log.error("获取锁失败,req={}",req);
-                return new InviteCodeResponse(req.getInviteCode());
+                throw new RubberServiceException(ErrorCodeEnums.CANCEL_INVITE_BUSY);
             }
             // 取消自己参与的活动
             // 校验活动是否存在
@@ -177,6 +181,9 @@ public class ActivityInviteApplyService  implements ActivityInviteApplyApi {
 
             return new InviteCodeResponse(req.getInviteCode());
 
+        }catch (BaseResultRunTimeException e){
+            log.error("参与邀约出现异常{}",e.getMessage());
+            throw e;
         }catch (Exception e){
             log.error("参与邀约出现异常{}",e.getMessage());
             return new InviteCodeResponse(req.getInviteCode());

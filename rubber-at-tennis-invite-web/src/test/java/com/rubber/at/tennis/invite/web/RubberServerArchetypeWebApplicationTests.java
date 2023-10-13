@@ -8,6 +8,7 @@ import com.rubber.at.tennis.invite.api.dto.ActivityInviteDetailDto;
 import com.rubber.at.tennis.invite.api.dto.ApplyInviteInfoDto;
 import com.rubber.at.tennis.invite.api.dto.UserTennisDetail;
 import com.rubber.at.tennis.invite.api.dto.req.ActivityInviteQueryReq;
+import com.rubber.at.tennis.invite.api.dto.req.CancelJoinInviteReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.service.UserTennisService;
 import com.rubber.at.tennis.invite.api.enums.RecordTypeEnums;
@@ -37,7 +38,7 @@ class RubberServerArchetypeWebApplicationTests {
     @Test
     public void doSave(){
 
-        ApplyInviteInfoDto dto = new ApplyInviteInfoDto();
+        CancelJoinInviteReq dto = new CancelJoinInviteReq();
         dto.setInviteCode("AICDJ1iD9dKKotKUp4Q");
         dto.setUid(10000001);
 //        dto.setName("这是一个测试");

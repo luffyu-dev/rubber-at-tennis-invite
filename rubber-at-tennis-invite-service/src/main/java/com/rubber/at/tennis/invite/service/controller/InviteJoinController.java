@@ -6,6 +6,7 @@ import com.rubber.at.tennis.invite.api.dto.req.InviteInfoCodeReq;
 import com.rubber.at.tennis.invite.api.dto.req.InviteJoinReq;
 import com.rubber.base.components.util.annotation.NeedLogin;
 import com.rubber.base.components.util.result.ResultMsg;
+import com.rubber.base.components.util.result.exception.BaseResultRunTimeException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,8 +32,12 @@ public class InviteJoinController {
     @NeedLogin
     @PostMapping("/submit")
     public ResultMsg joinInvite(@RequestBody InviteJoinReq dto){
-        activityInviteApplyApi.joinInvite(dto);
-        return ResultMsg.success();
+        try{
+            activityInviteApplyApi.joinInvite(dto);
+            return ResultMsg.success();
+        }catch (BaseResultRunTimeException e){
+            return ResultMsg.create(e.getResult());
+        }
     }
 
     /**
@@ -41,8 +46,12 @@ public class InviteJoinController {
     @NeedLogin
     @PostMapping("/cancel")
     public ResultMsg cancelJoin(@RequestBody CancelJoinInviteReq dto){
-        activityInviteApplyApi.cancelJoinInvite(dto);
-        return ResultMsg.success();
+        try{
+            activityInviteApplyApi.cancelJoinInvite(dto);
+            return ResultMsg.success();
+        }catch (BaseResultRunTimeException e){
+            return ResultMsg.create(e.getResult());
+        }
     }
 
 }
