@@ -2,6 +2,7 @@ package com.rubber.at.tennis.invite.service.controller;
 
 import com.rubber.at.tennis.invite.api.UserTennisApi;
 import com.rubber.at.tennis.invite.api.dto.UserModifyTennisDto;
+import com.rubber.at.tennis.invite.api.dto.req.ProxyUserReq;
 import com.rubber.at.tennis.invite.api.dto.req.UserTennisDateReq;
 import com.rubber.base.components.util.annotation.NeedLogin;
 import com.rubber.base.components.util.result.ResultMsg;
@@ -72,5 +73,26 @@ public class UserTennisController {
         return ResultMsg.success(userTennisApi.getUserBasicInfo(baseUserSession));
     }
 
+
+    /**
+     * 查询用户的信息
+     * @param req  用户信息
+     */
+    @PostMapping("/proxy-basic")
+    public ResultMsg getProxyUserBasicInfo(@RequestBody ProxyUserReq req){
+        req.setUid(req.getProxyUid());
+        return ResultMsg.success(userTennisApi.getUserBasicInfo(req));
+    }
+
+
+    /**
+     * 查询用户的信息
+     * @param req  用户信息
+     */
+    @PostMapping("/proxy-info")
+    public ResultMsg getProxyUserTennisInfo(@RequestBody ProxyUserReq req){
+        req.setUid(req.getProxyUid());
+        return ResultMsg.success(userTennisApi.getUserTennisInfo(req));
+    }
 
 }
